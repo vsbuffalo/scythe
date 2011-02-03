@@ -1,4 +1,4 @@
-# Scythe - A very simple adapter trimmer (version 0.1 ALPHA)
+# Scythe - A very simple adapter trimmer (version 0.93 BETA)
 
 Contact: Vince Buffalo <vsbuffaloAAAAA@gmail.com> (with the poly-A tail removed)
 
@@ -44,8 +44,6 @@ calculated across both these likelihood models, and the class
 (contaminated or not contaminted) with the maximum posterior
 probability is the class selected.
 
-**Currently Scythe only works with 3'-end adapters, and FASTQ files.**
-
 ## Requirements
 
 Scythe can be compiled using GCC or Clang; compilation during
@@ -63,6 +61,9 @@ To build Scythe, cd into the code/ directory and enter:
 Then, copy or move "scythe" to a directory in your $PATH.
 
 ## Usage
+
+*Note: this is outdated (and will be updated soon). Please refer to
+ scythe --help for the newest version.*
 
 Scythe can be run minimally with:
 
