@@ -30,7 +30,7 @@ Copyright (c) 2011 The Regents of University of California, Davis Campus.
 
 Scythe uses a Naive Bayesian approach to classify contaminant
 substrings in sequence reads. It considers quality information, which
-can make it robust in picking out 5'-end adapters, which often include
+can make it robust in picking out 3'-end adapters, which often include
 poor quality bases.
 
 The Bayesian approach compares to likelihood models, or the
@@ -85,9 +85,3 @@ Also, more detailed output about matches can be obtained with:
 Lastly, for debugging, everything can be printed to standard out with:
 
     scythe -a adapter_file.fasta -d sequences.fastq
-   
-
-## Status
-
-Currently Scythe only works on 3'-end adapters and FASTQ files. 5'-end
-adapter and FASTA support is forthcoming.
