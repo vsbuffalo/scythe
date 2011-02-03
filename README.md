@@ -79,7 +79,7 @@ Lastly, a minimum match length argument can be specified with -n <integer>:
 
 Scythe only checks for 3'-end contaminants, up to the adapter's length
 into the 3'-end. For reads with contamination in *any* position, the
-program TagDust <http://genome.gsc.riken.jp/osc/english/dataresource/>
+program TagDust (<http://genome.gsc.riken.jp/osc/english/dataresource/>)
 is recommended. Scythe has the advantages of allowing fuzzier matching
 and being base quality-aware, while TagDust has the advantages of very
 fast matching (but allowing few mismatches, and not considering
@@ -89,5 +89,5 @@ Scythe trims off contaminants.
 A possible pipeline would run FASTQ reads through Scythe, then
 TagDust, then a quality-based trimmer, and finally through a read
 quality statistics program such as qrqc
-<https://github.com/vsbuffalo/qrqc> or FASTqc
-<http://www.bioinformatics.bbsrc.ac.uk/projects/fastqc/>.
+(<https://github.com/vsbuffalo/qrqc>) or FASTqc
+(<http://www.bioinformatics.bbsrc.ac.uk/projects/fastqc/>).
