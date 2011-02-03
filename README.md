@@ -35,7 +35,7 @@ poor quality bases.
 
 The Bayesian approach compares to likelihood models, or the
 probability of contaminant (C) given a sequence (S) and quality
-(Q). Given that the read is contaminatd, the probability of seeing a
+(Q). Given that the read is contaminated, the probability of seeing a
 certain number of matches and mistmatches is a function of the quality
 of the sequence. Given the read is not contaminated (and is thus
 random sequence), the probability of seeing a certain number of
