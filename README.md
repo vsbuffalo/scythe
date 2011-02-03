@@ -69,11 +69,11 @@ Also, more detailed output about matches can be obtained with:
 By default, Illumina's quality scheme (pipeline > 1.3) is used. Sanger
 or Solexa (pipeline < 1.3) qualities can be specified with -q:
 
-   scythe -a adapter_file.fasta -q solexa -o trimmed_sequences.fasta sequences.fastq
+    scythe -a adapter_file.fasta -q solexa -o trimmed_sequences.fasta sequences.fastq
 
 Lastly, a minimum match length argument can be specified with -n <integer>:
 
-   scythe -a adapter_file.fasta -n 4 -o trimmed_sequences.fasta sequences.fastq
+    scythe -a adapter_file.fasta -n 4 -o trimmed_sequences.fasta sequences.fastq
 
 ## Notes
 
