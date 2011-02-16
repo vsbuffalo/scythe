@@ -54,7 +54,7 @@ Scythe requires Zlib, which can be obtained at <http://www.zlib.net/>.
 
 ## Building and Installing Scythe
 
-To build Scythe, cd into the code/ directory and enter:
+To build Scythe, enter:
 
     make
 

@@ -64,6 +64,7 @@ static struct option long_options[] = {
   {"matches-file", required_argument, 0, 'm'},
   {"output-file", required_argument, 0, 'c'},
   {"quiet", no_argument, 0, 'Q'},
+  {"tag", no_argument, 0, 't'},
   {GETOPT_HELP_OPTION_DECL},
   {GETOPT_VERSION_OPTION_DECL},
   {NULL, 0, NULL, 0}
@@ -79,6 +80,7 @@ Options:\n\
   -q, --quality-type	quality type, either illumina, solexa, or sanger (default: illumina)\n\
   -m, --matches-file	matches file (default: no output)\n\
   -o, --output-file	output trimmed sequences file (default: stdout)\n\
+  -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n\
   --quiet		don't output statistics about trimming to stdout (default: off)\n\
   --help		display this help and exit\n\
   --version		output version information and exit\n", default_prior);
@@ -88,7 +90,7 @@ Options:\n\
 int main(int argc, char *argv[]) {
   kseq_t *seq;
   int i, l, index, min=0;
-  static int debug=0, verbose=1;
+  int debug=0, verbose=1;
   int contaminated=0, total=0;
   quality_type qual_type=ILLUMINA;
   match *best_match;
@@ -97,11 +99,12 @@ int main(int argc, char *argv[]) {
   gzFile adapter_fp=NULL, output_fp=stdout, matches_fp=NULL, fp;
   int optc;
   char *match_string;
+  char tag[14] = "";
   extern char *optarg;
 
   while (1) {
     int option_index = 0;
-    optc = getopt_long(argc, argv, "dp:a:o:q:m:o:", long_options, &option_index);
+    optc = getopt_long(argc, argv, "dtp:a:o:q:m:o:", long_options, &option_index);
 
     if (optc == -1)
        break;
@@ -117,6 +120,10 @@ int main(int argc, char *argv[]) {
         break;
       case 'd':
         debug = 1;
+        break;
+      case 't':
+        strcpy(tag, ";;cut_scythe");
+        printf("%s\n",tag);
         break;
       case 'Q':
         verbose = 0;
@@ -208,9 +215,9 @@ int main(int argc, char *argv[]) {
          results and match entry (if specified). */
       contaminated++;
       fprintf(output_fp, 
-             "@%s;;cut_scythe\n%.*s\n+%s;;cut_scythe\n%.*s\n", seq->name.s, 
-             (int) seq->seq.l-best_match->n, seq->seq.s, seq->name.s, 
-             (int) seq->seq.l-best_match->n, seq->qual.s);
+              "@%s%s\n%.*s\n+%s%s\n%.*s\n", seq->name.s, tag,
+              (int) seq->seq.l-best_match->n, seq->seq.s, seq->name.s, tag, 
+              (int) seq->seq.l-best_match->n, seq->qual.s);
       
       /* print match for 5'-end; seq->seq.s is point to the
          approperiate place by taking the sequence length and

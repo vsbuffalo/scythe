@@ -38,7 +38,6 @@ match *find_best_match(const adapter_array *aa, const char *read,
   float *best_p_quals; /* for the subset of read qualities of the matching sequence */
   for (i = 0; i < aa->n; i++) {
     if ((aa->adapters[i]).end == THREE_PRIME) {
-      //ll = (aa->adapters[i]).length;
       if (min >= aa->adapters[i].length) {
         fprintf(stderr, "error: Minimum match length (option -n) greater than or equal to length of adapter.\n");
         exit(EXIT_FAILURE);
@@ -47,7 +46,6 @@ match *find_best_match(const adapter_array *aa, const char *read,
         m = score_sequence(&(read)[rl-l], (aa->adapters[i]).seq, l);
         current_score = sum(m, l);
         
-        //print_matches((aa->adapters[i]).seq, &(read)[rl-l], m);
         /* the first sequence comparison is always the max_score */ 
         if (first) {
           max = m;
@@ -87,7 +85,6 @@ match *find_best_match(const adapter_array *aa, const char *read,
     free(max);
     return NULL;
   }
-  //printf("adapter num: %d\n", i);
   /* save this match */ 
   best_match = xmalloc(sizeof(match));
   best_match->match = max;

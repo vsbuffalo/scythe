@@ -46,12 +46,12 @@ adapter_array *load_adapters(gzFile fp) {
     strncat(adapters[i].name, aseq->comment.s, aseq->comment.l+1);
     adapters[i].length = seq_l;
     
-    // occurences - for recording where adapters are found
+    /* occurences - for recording where adapters are found */
     adapters[i].occurrences = xmalloc(seq_l*sizeof(unsigned int));
     for (j=0; j < seq_l; j++)
       adapters[i].occurrences[j] = 0;
 
-    // detect end of adapter (either 5' or 3')
+    /* detect end of adapter (either 5' or 3') */
     if (strstr(adapters[i].name, "3'")) {
       adapters[i].end = THREE_PRIME;
     } else {

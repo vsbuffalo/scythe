@@ -21,10 +21,10 @@ typedef enum {
 #define Q_MAX 2
 
 static const int quality_contants[3][3] = {
-  // offset, min, max
-  {33, 0, 93}, // SANGER
-  {64, -5, 62}, // SOLEXA
-  {64, 0, 62} // ILLUMINA
+  /* offset, min, max */
+  {33, 0, 93}, /* SANGER */
+  {64, -5, 62}, /* SOLEXA */
+  {64, 0, 62} /* ILLUMINA */
 };
 
 enum sequence_ends {
