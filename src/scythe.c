@@ -63,6 +63,7 @@ static struct option long_options[] = {
   {"quality-type", required_argument, 0, 'q'},
   {"matches-file", required_argument, 0, 'm'},
   {"output-file", required_argument, 0, 'c'},
+  {"min-match", required_argument, 0, 'n'},
   {"quiet", no_argument, 0, 'Q'},
   {"tag", no_argument, 0, 't'},
   {GETOPT_HELP_OPTION_DECL},
@@ -81,6 +82,7 @@ Options:\n\
   -m, --matches-file	matches file (default: no output)\n\
   -o, --output-file	output trimmed sequences file (default: stdout)\n\
   -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n\
+  -n, --min-match	smallest contaminant to consider (default: 0)\n\
   --quiet		don't output statistics about trimming to stdout (default: off)\n\
   --help		display this help and exit\n\
   --version		output version information and exit\n", default_prior);
@@ -104,7 +106,7 @@ int main(int argc, char *argv[]) {
 
   while (1) {
     int option_index = 0;
-    optc = getopt_long(argc, argv, "dtp:a:o:q:m:o:", long_options, &option_index);
+    optc = getopt_long(argc, argv, "dtp:a:o:q:m:o:n:", long_options, &option_index);
 
     if (optc == -1)
        break;
