@@ -186,10 +186,11 @@ int main(int argc, char *argv[]) {
   }
   
   if ((index = optind) == argc) {
-    fprintf(stderr, "No FASTQ or FASTA file specified.\n");
+    fprintf(stderr, "No FASTQ file specified.\n");
     usage(EXIT_FAILURE);
   }
 
+ 
   /* load all adapter sequences into memory */
   if (!adapter_fp) {
     fprintf(stderr, "No adapter file specified.\n");
@@ -199,6 +200,13 @@ int main(int argc, char *argv[]) {
   gzclose(adapter_fp);
 
   fp = gzopen(argv[index], "r");
+
+  if (!fp) {
+    fprintf(stderr, "FASTQ file '%s' not found.\n", argv[index]);
+    return EXIT_FAILURE;
+  }
+
+
   seq = kseq_init(fp);
 
 
