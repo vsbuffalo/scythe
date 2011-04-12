@@ -46,13 +46,13 @@ enum {
     break;
 #define case_GETOPT_VERSION_CHAR(Program_name, Version, Authors)        \
   case GETOPT_VERSION_CHAR:                                             \
-    fprintf(stdout, "%s version %0.3f\nCopyright (c) 2011 The Regents " \
-                    "of University of California, Davis Campus.\n"      \
-                    "%s is free software and comes with ABSOLUTELY NO WARRANTY.\n"\
-                    "Distributed under the MIT License.\n\nWritten by %s\n", \
-                     Program_name, Version, Program_name, Authors);     \
-    exit(EXIT_SUCCESS);                                                \
-    break;
+  fprintf(stdout, "%s version %0.3f\nCopyright (c) 2011 The Regents "   \
+          "of University of California, Davis Campus.\n"                \
+          "%s is free software and comes with ABSOLUTELY NO WARRANTY.\n" \
+          "Distributed under the MIT License.\n\nWritten by %s\n",      \
+          Program_name, (double) Version, Program_name, Authors);       \
+  exit(EXIT_SUCCESS);                                                   \
+  break;
 /* end code drawn from system.h */
 
 
@@ -72,20 +72,23 @@ static struct option long_options[] = {
 };
 
 void usage(int status) {
-  fprintf(stdout, "\nUsage: scythe -a adapter_file.fasta sequence_file.fastq\n\
+  fputs("\nUsage: scythe -a adapter_file.fasta sequence_file.fastq\n\
 Trim 3'-end adapter contaminants off sequence files. If no output file\n\
 is specified, scythe will use stdout.\n\
 \n\
-Options:\n\
-  -p, --prior		prior (default: %0.3f)\n\
+Options:\n", stdout);
+  printf("\
+  -p, --prior		prior (default: %0.3f)\n", default_prior);
+  fputs("\
   -q, --quality-type	quality type, either illumina, solexa, or sanger (default: illumina)\n\
   -m, --matches-file	matches file (default: no output)\n\
   -o, --output-file	output trimmed sequences file (default: stdout)\n\
-  -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n\
+  -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n", stdout);
+  fputs("\
   -n, --min-match	smallest contaminant to consider (default: 0)\n\
   --quiet		don't output statistics about trimming to stdout (default: off)\n\
   --help		display this help and exit\n\
-  --version		output version information and exit\n", default_prior);
+  --version		output version information and exit\n", stdout);
   exit(status);
 }
 

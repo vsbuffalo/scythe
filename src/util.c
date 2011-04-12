@@ -50,18 +50,6 @@ adapter_array *load_adapters(gzFile fp) {
     adapters[i].occurrences = xmalloc(seq_l*sizeof(unsigned int));
     for (j=0; j < seq_l; j++)
       adapters[i].occurrences[j] = 0;
-
-    /* detect end of adapter (either 5' or 3') */
-    if (strstr(adapters[i].name, "3'")) {
-      adapters[i].end = THREE_PRIME;
-    } else {
-      if (strstr(adapters[i].name, "5'"))
-        adapters[i].end = FIVE_PRIME;
-      else {
-        fprintf(stderr, "Adapter file contains adapter without 5' or 3' in header");
-        exit(EXIT_FAILURE);
-        }
-    }
     i++;
   }
 
