@@ -27,16 +27,10 @@ static const int quality_contants[3][3] = {
   {64, 0, 62} /* ILLUMINA */
 };
 
-enum sequence_ends {
-  FIVE_PRIME=5,
-  THREE_PRIME=3
-};
-
 typedef struct adapter {
   char *name;
   char *seq;
   int length;
-  enum sequence_ends end;
   unsigned int *occurrences;
 } adapter;
 
