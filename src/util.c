@@ -37,13 +37,22 @@ adapter_array *load_adapters(gzFile fp) {
      null byte, so these have to be taken into account.
   */
   while ((seq_l = kseq_read(aseq)) >= 0) {
+    if (!aseq->seq.l || !aseq->name.l) {
+      fprintf(stderr, "Blank FASTA header or sequence in adapters file.\n");
+      exit(EXIT_FAILURE);
+    }
+
     adapters[i].seq = (char *) xmalloc(seq_l*sizeof(char) + 1);
     strncpy(adapters[i].seq, aseq->seq.s, seq_l);
     header_l = aseq->name.l + aseq->comment.l + 1;
     adapters[i].name = (char *) xmalloc(header_l*sizeof(char) + 1);
     strncpy(adapters[i].name, aseq->name.s, aseq->name.l+1);
-    strncat(adapters[i].name, " ", 1);
-    strncat(adapters[i].name, aseq->comment.s, aseq->comment.l+1);
+
+    if (aseq->comment.s) {
+      strncat(adapters[i].name, " ", 1);
+      strncat(adapters[i].name, aseq->comment.s, aseq->comment.l+1);
+    }
+
     adapters[i].length = seq_l;
     
     /* occurences - for recording where adapters are found */

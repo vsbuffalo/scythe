@@ -89,6 +89,16 @@ Options:\n", stdout);
   --quiet		don't output statistics about trimming to stdout (default: off)\n\
   --help		display this help and exit\n\
   --version		output version information and exit\n", stdout);
+  fputs("\n\
+  Information on quality schemes:\n\
+  phred			PHRED quality scores (e.g. from Roche 454). ASCII with no offset, range: [4, 60].\n\
+  sanger		Sanger are PHRED ASCII qualities with an offset of 33, range: [0, 93]. From \n\
+			NCBI SRA, or Illumina pipeline 1.8+.\n\
+  solexa		Solexa (also very early Illumina - pipeline < 1.3). ASCII offset of\n\
+	 		64, range: [-5, 62]. Uses an approximation for conversion to probabilities\n\
+			which is less accurate with low quality bases.\n\
+  illumina		Illumina output from pipeline versions between 1.3 and 1.7. ASCII offset of 64,\n\
+			range: [0, 62]\n", stdout);
   exit(status);
 }
 
