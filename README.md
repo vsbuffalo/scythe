@@ -93,5 +93,5 @@ Scythe trims off contaminants.
 A possible pipeline would run FASTQ reads through Scythe, then
 TagDust, then a quality-based trimmer, and finally through a read
 quality statistics program such as qrqc
-(<https://github.com/vsbuffalo/qrqc>) or FASTqc
+(<http://bioconductor.org/packages/devel/bioc/html/qrqc.html>) or FASTqc
 (<http://www.bioinformatics.bbsrc.ac.uk/projects/fastqc/>).
