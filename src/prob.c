@@ -10,10 +10,26 @@
 #include "scythe.h"
 
 float *qual_to_probs(const char *qual, quality_type q_type) {
+  /* 
+     There are two quality-to-probability conversion formulas.
+      - Solexa (pre-1.3 pipeline):
+        q = -10 log10 (p/(1 - p))
+        p = 1/(1 + 10^(q/10))
+
+      - Illumina/Sanger/PHRED:
+        q = -10 log10 p
+        p = 1/(10^(q/10))
+
+     From http://en.wikipedia.org/wiki/FASTQ.
+  */
   int i, n = strlen(qual);
   float *probs = xmalloc(sizeof(float)*n);
   for (i = 0; i < n; i++) {
-    probs[i] = 1/(1 + powf(10, -((char) qual[i]-quality_contants[q_type][Q_OFFSET])/10.0));
+    if (q_type == SOLEXA) {
+        probs[i] = 1 - 1/(1 + powf(10, ((char) qual[i]-quality_contants[SOLEXA][Q_OFFSET])/10.0));
+    } else {
+      probs[i] = 1 - 1/(powf(10, ((char) qual[i]-quality_contants[q_type][Q_OFFSET])/10.0));
+    }
   }
   return probs;
 }

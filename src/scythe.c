@@ -96,8 +96,8 @@ Options:\n", stdout);
 			NCBI SRA, or Illumina pipeline 1.8+.\n\
   solexa		Solexa (also very early Illumina - pipeline < 1.3). ASCII offset of\n", stdout);
   fputs("\
-	 		64, range: [-5, 62]. Uses an approximation for conversion to probabilities\n\
-			which is less accurate with low quality bases.\n\
+	 		64, range: [-5, 62]. Uses a different quality-to-probabilities conversion than other\n\
+			schemes.\n\
   illumina		Illumina output from pipeline versions between 1.3 and 1.7. ASCII offset of 64,\n\
 			range: [0, 62]\n", stdout);
   exit(status);
