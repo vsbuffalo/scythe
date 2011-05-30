@@ -73,7 +73,11 @@ or Solexa (pipeline < 1.3) qualities can be specified with -q:
 
 Lastly, a minimum match length argument can be specified with -n <integer>:
 
-    scythe -a adapter_file.fasta -n 4 -o trimmed_sequences.fasta sequences.fastq
+    scythe -a adapter_file.fasta -n 0 -o trimmed_sequences.fasta sequences.fastq
+
+The default is 5. If this pre-processing is upstream of assembly on a
+very contaminated lane, decreasing this parameter could lead to *very*
+liberal trimming, i.e. of only a few bases. 
 
 ## Notes
 

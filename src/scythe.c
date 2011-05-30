@@ -85,7 +85,7 @@ Options:\n", stdout);
   -o, --output-file	output trimmed sequences file (default: stdout)\n\
   -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n", stdout);
   fputs("\
-  -n, --min-match	smallest contaminant to consider (default: 0)\n\
+  -n, --min-match	smallest contaminant to consider (default: 5)\n\
   --quiet		don't output statistics about trimming to stdout (default: off)\n\
   --help		display this help and exit\n\
   --version		output version information and exit\n", stdout);
@@ -105,7 +105,7 @@ Options:\n", stdout);
 
 int main(int argc, char *argv[]) {
   kseq_t *seq;
-  int i, l, index, min=0;
+  int i, l, index, min=5;
   int debug=0, verbose=1;
   int contaminated=0, total=0;
   quality_type qual_type=ILLUMINA;
