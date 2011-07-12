@@ -3,6 +3,7 @@
 */
 
 #include <assert.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,9 +28,13 @@ void *xmalloc(size_t size) {
 
 adapter_array *load_adapters(gzFile fp) {
   adapter_array *aa = xmalloc(sizeof(adapter_array));
-  adapter *adapters = xmalloc(sizeof(adapter)*MAX_ADAPTERS);
+  adapter *adapters = xmalloc(sizeof(adapter)*MAX_ADAPTERS), *tmp;
   kseq_t *aseq;  
-  int i=0, j, seq_l, header_l;
+  int i=0, j, ns, seq_l, header_l;
+
+  /* initial array size */
+  aa->array_size = MAX_ADAPTERS;
+  aa->n = 0;
 
   aseq = kseq_init(fp);
   /* 
@@ -40,6 +45,23 @@ adapter_array *load_adapters(gzFile fp) {
     if (!aseq->seq.l || !aseq->name.l) {
       fprintf(stderr, "Blank FASTA header or sequence in adapters file.\n");
       exit(EXIT_FAILURE);
+    }
+
+    /* Before going any further, we need to check if we need to grow
+       the adapters arary. We grow by a factor defined by
+       GROW_FACTOR. */
+
+    if (aa->array_size <= aa->n + 2) {
+      ns = ceil(GROW_FACTOR * aa->array_size);
+      tmp = realloc(adapters, ns);
+      fprintf(stderr, "Currently there are %d adapters\n", aa->n);
+      fprintf(stderr, "Growing number of adapters from %d to %d\n", aa->array_size, ns);
+      if (!tmp) {
+        fprintf(stderr, "Cannot allocate more memory for adapters - out of memory\n");
+        exit(EXIT_FAILURE);
+      }
+      adapters = tmp;
+      aa->array_size = ns;
     }
 
     adapters[i].seq = (char *) xmalloc(seq_l*sizeof(char) + 1);
@@ -60,10 +82,10 @@ adapter_array *load_adapters(gzFile fp) {
     for (j=0; j < seq_l; j++)
       adapters[i].occurrences[j] = 0;
     i++;
+    aa->n = i;
   }
 
   aa->adapters = adapters;
-  aa->n = i;
 
   kseq_destroy(aseq);
   return(aa);

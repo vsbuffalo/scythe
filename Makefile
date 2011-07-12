@@ -45,4 +45,8 @@ build: match.o scythe.o util.o prob.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $? -o scythe
 
 debug:
-	$(MAKE) build "CFLAGS=-Wall -pedantic -g -DDEBUG"
+	$(CC) $(DEBUG) $(CLFAGS) -c $(SDIR)/scythe.c
+	$(CC) $(DEBUG) $(CLFAGS) -c $(SDIR)/util.c
+	$(CC) $(DEBUG) $(CLFAGS) -c $(SDIR)/prob.c
+	$(CC) $(DEBUG) $(CLFAGS) -c $(SDIR)/match.c
+	$(CC) $(CFLAGS) $(LDFLAGS) match.o util.o prob.o scythe.o -o scythe

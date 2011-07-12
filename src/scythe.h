@@ -4,14 +4,15 @@
 #include <zlib.h>
 
 
-#define MAX_ADAPTERS 20
+#define MAX_ADAPTERS 1
+#define GROW_FACTOR 1.2 /* grow by 20% */
 #define MATCH_SCORE 1
 #define MISMATCH_SCORE -1
 
 #define IS_FASTQ(quality_type) INTEGER(quality_type)[0] >= 0
 
 typedef enum {
-  PHRED, 
+  PHRED,
   SANGER,
   SOLEXA,
   ILLUMINA
@@ -42,6 +43,7 @@ typedef struct adapter {
 typedef struct adapter_array {
   adapter *adapters;
   int n;
+  int array_size;
 } adapter_array;
 
 enum contam {
