@@ -2,7 +2,8 @@
 
 NUCLEOTIDES <- c('A', 'T', 'C', 'G')
 #adapters <- list("solexa_adapter_1"="AGATCGGAAGAGCTCGTATGCCGTCTTCTGCTTG")
-adapter <- "AGATCGGAAGAGCTCGTATGCCGTCTTCTGCTTG"
+#adapter <- "AGATCGGAAGAGCTCGTATGCCGTCTTCTGCTTG"
+adapter <- "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 
 set.seed(0)
 
@@ -38,18 +39,17 @@ function(length, adapter=NULL, quality=NULL, is.contam=FALSE, min.contam=3) {
 contaminateFASTQEntry <- function(con, outfile, rate, adapters, min.contam=3) {
   outlist <- list()
   while (length(block <- readLines(con, n=4, warn=FALSE)) > 0) {
-    print(block)
     if (runif(1) <= rate) {
       # contaminate
       header <- paste(block[1], "contaminated", sep="-")
       quality <- block[4]
       seq <- generateRandomSeq(nchar(block[2]), adapter=adapter, quality=quality, is.contam=TRUE, min.contam=min.contam)
-      outlist <- c(outlist, header, seq, header, quality)
+      outlist <- c(outlist, header, seq, sprintf("+%s", substr(header, 2, nchar(header))), quality)
     } else {
       header <- block[1]
       quality <- block[4]
       seq <- generateRandomSeq(nchar(block[2]), is.contam=FALSE, min.contam=min.contam)
-      outlist <- c(outlist, header, seq, header, quality)
+      outlist <- c(outlist, header, seq, sprintf("+%s", substr(header, 2, nchar(header))), quality)
     }
   }
   browser()
