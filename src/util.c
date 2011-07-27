@@ -121,9 +121,9 @@ void fprint_float_array(FILE *fp, const float *array, int n) {
   fprintf(fp, "[");
   for (i = 0; i < n; i++) {
     if (i != n-1)
-      fprintf(fp, "%.2f, ", array[i]);
+      fprintf(fp, "%.3f, ", array[i]);
     else
-      fprintf(fp, "%.2f]", array[i]);
+      fprintf(fp, "%.3f]", array[i]);
   }
 }
 
