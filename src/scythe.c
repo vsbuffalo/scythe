@@ -253,11 +253,13 @@ int main(int argc, char *argv[]) {
                                    &(seq->seq.s)[seq->seq.l-best_match->n], 
                                    best_match->match, best_match->n);
         
-        fprintf(matches_fp, "p(c|s): %f; p(!c|s): %f; adapter: %s\n%s\n%s\n%s\n\n", 
+        fprintf(matches_fp, "p(c|s): %f; p(!c|s): %f; adapter: %s\n%s\n%s\n%s\n", 
                 best_match->ps->contam, best_match->ps->random,
                 aa->adapters[best_match->adapter_index].name,
                 seq->name.s, match_string, 
                 &(seq->qual.s)[seq->qual.l-best_match->n]);
+        fprint_float_array(matches_fp, qual_to_probs(&(seq->qual.s)[seq->qual.l-best_match->n], qual_type), best_match->n);
+        fprintf(matches_fp, "\n\n");
         free(match_string);
       }
 

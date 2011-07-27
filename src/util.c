@@ -112,9 +112,21 @@ void print_float_array(const float *array, int n) {
     if (i != n-1)
       printf("%f, ", array[i]);
     else
-    printf("%f]", array[i]);
+      printf("%f]", array[i]);
   }
 }
+
+void fprint_float_array(FILE *fp, const float *array, int n) {
+  int i;
+  fprintf(fp, "[");
+  for (i = 0; i < n; i++) {
+    if (i != n-1)
+      fprintf(fp, "%.2f, ", array[i]);
+    else
+      fprintf(fp, "%.2f]", array[i]);
+  }
+}
+
 
 void print_int_array(const int *array, int n) {
   int i;
@@ -123,7 +135,7 @@ void print_int_array(const int *array, int n) {
     if (i != n-1)
       printf("%d, ", array[i]);
     else
-    printf("%d]", array[i]);
+      printf("%d]", array[i]);
   }
 }
 

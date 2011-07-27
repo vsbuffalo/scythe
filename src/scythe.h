@@ -82,6 +82,7 @@ adapter_array *load_adapters(gzFile fp);
 void destroy_adapters(adapter_array *aa, int n);
 char *fmt_matches(const char *seqa, const char *seqb, const int *matches, const int n);
 void print_float_array(const float *array, int n);
+void fprint_float_array(FILE *fp, const float *array, int n);
 void print_int_array(const int *array, int n);
 void print_uint_array(const unsigned int *array, int n);
 int sum(const int *x, int n);
