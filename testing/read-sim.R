@@ -2,8 +2,8 @@
 
 NUCLEOTIDES <- c('A', 'T', 'C', 'G')
 #adapters <- list("solexa_adapter_1"="AGATCGGAAGAGCTCGTATGCCGTCTTCTGCTTG")
-#adapter <- "AGATCGGAAGAGCTCGTATGCCGTCTTCTGCTTG"
-adapter <- "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+adapter <- "AGATCGGAAGAGCTCGTATGCCGTCTTCTGCTTG"
+#adapter <- "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 
 set.seed(0)
 
@@ -14,6 +14,7 @@ function(seq, quality) {
   # http://seqanswers.com/forums/showthread.php?t=1523 and it appears
   # correct - VB
   stopifnot(nchar(seq) == nchar(quality))
+
   probs.wrong <- sapply(charToRaw(quality), function(x) 1/(10^((as.integer(x) - 64)/10)))
   paste(mapply(function(base, p.wrong) {
     if (rbinom(1, 1, p.wrong))
@@ -29,33 +30,45 @@ function(length, adapter=NULL, quality=NULL, is.contam=FALSE, min.contam=3) {
   if (!is.contam)
     paste(sample(NUCLEOTIDES, length, replace=TRUE), collapse="")
   else {
-    ll <- runif(1, min.contam, nchar(adapter))
+    ll <- sample(min.contam:nchar(adapter), 1)
     contam <- substr(adapter, 1, ll)
-    pre.error.seq <- paste(paste(sample(NUCLEOTIDES, length-ll+1, replace=TRUE), collapse=""), contam, sep="")
-    return(addErrors(pre.error.seq, quality))
+    pre.error.seq <- paste(paste(sample(NUCLEOTIDES, length-nchar(contam), replace=TRUE), collapse=""), contam, sep="")
+    return(list(contam.n=ll, seq=addErrors(pre.error.seq, quality)))
   }
 }
 
 contaminateFASTQEntry <- function(con, outfile, rate, adapters, min.contam=3) {
-  outlist <- list()
-  while (length(block <- readLines(con, n=4, warn=FALSE)) > 0) {
+  blocks.processed <- 0
+  reads <- readLines(con)
+  outlist <- vector('character', length(reads))
+  while (blocks.processed*4 < length(reads)) {
+    quality <- reads[4*blocks.processed+4]
+    seq <- reads[4*blocks.processed+2]
+    header <- reads[4*blocks.processed+1]
+
     if (runif(1) <= rate) {
       # contaminate
-      header <- paste(block[1], "contaminated", sep="-")
-      quality <- block[4]
-      seq <- generateRandomSeq(nchar(block[2]), adapter=adapter, quality=quality, is.contam=TRUE, min.contam=min.contam)
-      outlist <- c(outlist, header, seq, sprintf("+%s", substr(header, 2, nchar(header))), quality)
+      tmp <- generateRandomSeq(nchar(seq), adapter=adapter, quality=quality, is.contam=TRUE, min.contam=min.contam)
+      seq <- tmp$seq
+      ll <- tmp$contam.n
+      header <- sprintf("%s-contaminated-%d", header, ll)
     } else {
-      header <- block[1]
-      quality <- block[4]
-      seq <- generateRandomSeq(nchar(block[2]), is.contam=FALSE, min.contam=min.contam)
-      outlist <- c(outlist, header, seq, sprintf("+%s", substr(header, 2, nchar(header))), quality)
+      header <- sprintf("%s-uncontaminated", header)
+      seq <- generateRandomSeq(nchar(seq), is.contam=FALSE, min.contam=min.contam)
     }
+
+    # output results to vector
+    outlist[4*blocks.processed+1] <- header
+    outlist[4*blocks.processed+2] <- seq
+    outlist[4*blocks.processed+3] <- sprintf("+%s", substr(header, 2, nchar(header)))
+    outlist[4*blocks.processed+4] <- quality
+
+    blocks.processed <- blocks.processed + 1
+    if (blocks.processed %% 100 == 0)
+      message(sprintf("%d blocks processed.", blocks.processed))
   }
-  browser()
-  writeLines(unlist(outlist), con=file(outfile))
-  TRUE
+  writeLines(outlist, con=file(outfile))
 }
 
-ff <- file("small.fastq", open="r")
+ff <- file("test-sample.fastq", open="r")
 contaminateFASTQEntry(ff, outfile="test.fastq", 0.8, adapter)
