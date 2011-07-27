@@ -71,4 +71,4 @@ contaminateFASTQEntry <- function(con, outfile, rate, adapters, min.contam=3) {
 }
 
 ff <- file("test-sample.fastq", open="r")
-contaminateFASTQEntry(ff, outfile="test.fastq", 0.8, adapter)
+contaminateFASTQEntry(ff, outfile="test.fastq", 0.3, adapter)

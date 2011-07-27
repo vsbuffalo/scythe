@@ -19,5 +19,7 @@ include <- !unlist(lapply(prior.data, is.null))
 priors <- seq(0, 1, 0.1)[include]
 prior.data <- cbind(prior=priors, do.call(rbind, prior.data[include]))
 
+## ROC curve
 plot(x=1-prior.data[, 15], y=prior.data[, 14], ylim=c(0, 1), xlim=c(0, 1), xlab="1 - specificity (FPR)", ylab="sensitivity (TPR)", type='n')
 text(x=1-prior.data[, 15], y=prior.data[, 14], ylim=c(0, 1), xlim=c(0, 1), xlab="1 - specificity (FPR)", labels=prior.data$prior, cex=0.6)
+abline(a=0, b=1, col="purple")
