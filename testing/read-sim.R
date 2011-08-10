@@ -70,5 +70,3 @@ contaminateFASTQEntry <- function(con, outfile, rate, adapters, min.contam=3) {
   writeLines(outlist, con=file(outfile))
 }
 
-ff <- file("test-sample.fastq", open="r")
-contaminateFASTQEntry(ff, outfile="test.fastq", 0.3, adapter)

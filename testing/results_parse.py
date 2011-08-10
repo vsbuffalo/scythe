@@ -3,7 +3,6 @@
 
 from optparse import OptionParser
 import re
-import pdb
 
 parser = OptionParser()
 parser.add_option("-r", "--readsfile", dest="reads_file",
@@ -63,7 +62,7 @@ for block in FASTQIter(options.reads_file):
     total += 1
 print "contaminated\t", contaminated
 print "uncontaminated\t", uncontaminated
-print "contamination rate\t", contaminated/float(total)
+print "contamination rate\t", contaminated/float(total) if total > 0 else 0
 print "total\t", total
 
 ## Gather statistics on the number of false positives via the matches file
@@ -81,16 +80,31 @@ for block in matchesIter(options.matches_file):
         true_positives_qual.append(base_probs)
     total_positives += 1
 
+## Gather statistics on the number of false negatives from clipped file
+false_negatives = 0
+true_negatives = 0
+for block in FASTQIter(options.trimmed_file):
+    if re.search(r"-contaminated-[0-9]+$", block['header']) is not None:
+        false_negatives += 1
+    if re.search(r"-uncontaminated$", block['header']) is not None:
+        true_negatives += 1
+
 if total_positives > 0:
     true_positives = total_positives - false_positives
+    total_negatives = true_negatives + false_negatives
+    assert(contaminated == true_positives + false_negatives)
+    assert(uncontaminated == false_positives + true_negatives)    
+
     print "false positives\t", false_positives
     print "true positives\t", true_positives
     print "total positives\t", total_positives
     print "false positive rate\t", false_positives/float(total)
     print "false positive mean qual\t", mean(false_positives_qual)
     print "true positive mean qual\t", mean(true_positives_qual)
-    
-    print "false negatives\t", contaminated-total_positives
-    print "false negative rate\t", (contaminated-total_positives)/float(total)
-    print "sensitivity\t", true_positives/float(total_positives)
+
+    print "true negatives\t", true_negatives
+    print "false negatives\t", false_negatives
+    print "total negatives\t", true_negatives
+    print "false negative rate\t", (false_negatives)/float(total)
+    print "sensitivity\t", true_positives/float(contaminated) if contaminated > 0 else 0
     print "specificity\t", 1-false_positives/float(total)
