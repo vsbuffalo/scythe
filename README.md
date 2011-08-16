@@ -95,3 +95,56 @@ TagDust, then a quality-based trimmer, and finally through a read
 quality statistics program such as qrqc
 (<http://bioconductor.org/packages/devel/bioc/html/qrqc.html>) or FASTqc
 (<http://www.bioinformatics.bbsrc.ac.uk/projects/fastqc/>).
+
+## FAQ 
+
+### Does Scythe work with paired-end data?
+
+Scythe does work with paired-end data. Each file must be run
+separately, but Scythe will not remove reads entirely leaving
+mismatched pairs.
+
+In some cases, barcodes are ligated to both the 3'-end and 5'-end of
+reads. 5'-end removal is trivial since base calling is near-perfect
+there, but 3'-end removal can be trickier. Some users have created
+Scythe adapter files that contain all possible barcodes concatenated
+with possible adapters, so that both can be recognized and
+removed. This has worked well and is recommended for cases when 3'-end
+quality deteriorates and prevents barcode removal. Newer Illumina
+chemistry has the barcode separated from the fragment, so that it
+appears as an entirely separate read and is used to demultiplex sample
+reads by Illumina's CASAVA pipeline.
+
+### Does Scythe work on 5'-end or other contaminants?
+
+No. Embracing the Unix tool philosophy that tools should do one thing
+very well, Scythe just removes 3'-end contaminants where there could
+be multiple base mismatches due to poor base quality. N-mismatch
+algorithms (such as TagDust) don't consider base qualities. Scythe
+will allow more mismatches in an alignment if the mismatched bases are
+of low quality.
+
+**Scythe only checks as far in as the entire adapter contaminant's
+length.** However, some investigation has shown that Illumina
+pipelines sometimes produce reads longer than the read length +
+adapter length. The extra bases have always been observed to be
+A's. Some testing has shown this can be addressed by appending A's to
+the adapters in the adapters file. Since Scythe begins by checking for
+contamination from the 5'-end of the adapter, this won't affect the
+normal adapter contaminant cases.
+
+## What does the numeric output from Scythe mean?
+
+For each adapter in the file, the contaminants removed by position are
+returned via standard out. For example:
+
+    Adapter 1 'fake adapter' contamination occurences:
+    [10, 2, 4, 5, 6]
+
+indicates that "fake adapter" is 5 bases long (the length of the array
+returned), and that there were 10 contaminants found of first base (-n
+was set to 0 then), 2 of the first two bases, 4 contaminants of the
+first 3 bases, 5 of the first 4 bases, etc.
+
+
+
