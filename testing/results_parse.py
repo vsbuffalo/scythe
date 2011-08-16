@@ -92,6 +92,8 @@ for block in FASTQIter(options.trimmed_file):
 if total_positives > 0:
     true_positives = total_positives - false_positives
     total_negatives = true_negatives + false_negatives
+
+    ## check that confusion matrix values add up as they should
     assert(contaminated == true_positives + false_negatives)
     assert(uncontaminated == false_positives + true_negatives)    
 
