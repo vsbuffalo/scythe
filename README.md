@@ -133,7 +133,7 @@ the adapters in the adapters file. Since Scythe begins by checking for
 contamination from the 5'-end of the adapter, this won't affect the
 normal adapter contaminant cases.
 
-## What does the numeric output from Scythe mean?
+### What does the numeric output from Scythe mean?
 
 For each adapter in the file, the contaminants removed by position are
 returned via standard out. For example:
