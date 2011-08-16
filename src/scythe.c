@@ -280,14 +280,14 @@ int main(int argc, char *argv[]) {
   
   /* If --quiet not specified, print out a summary at the end. */
   if (verbose) {
-    printf("prior: %0.3f\n", prior);
-    printf("\nAdapter Trimming Complete\ncontaminated: %d, uncontaminated: %d, total: %d\n", 
+    fprintf(stderr, "prior: %0.3f\n", prior);
+    fprintf(stderr, "\nAdapter Trimming Complete\ncontaminated: %d, uncontaminated: %d, total: %d\n", 
            contaminated, total-contaminated, total);
-    printf("contamination rate: %f", contaminated/(float) total);
+    fprintf(stderr, "contamination rate: %f", contaminated/(float) total);
     for (i = 0; i < aa->n; i++) {
-      printf("\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name);
-      print_uint_array(aa->adapters[i].occurrences, aa->adapters[i].length);
-      printf("\n");
+      fprintf(stderr, "\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name);
+      fprint_uint_array(stderr, aa->adapters[i].occurrences, aa->adapters[i].length);
+      fprintf(stderr, "\n");
     }
   }
 

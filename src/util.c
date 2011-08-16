@@ -151,6 +151,17 @@ void print_uint_array(const unsigned int *array, int n) {
   }
 }
 
+void fprint_uint_array(FILE *fp, const unsigned int *array, int n) {
+  int i;
+  fprintf(fp, "[");
+  for (i = 0; i < n; i++) {
+    if (i != n-1)
+      fprintf(fp, "%d, ", array[i]);
+    else
+      fprintf(fp, "%d]", array[i]);
+  }
+}
+
 int sum(const int *x, int n) {
   int i;
   int s = 0;
