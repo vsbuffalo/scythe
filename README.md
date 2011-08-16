@@ -136,7 +136,7 @@ normal adapter contaminant cases.
 ### What does the numeric output from Scythe mean?
 
 For each adapter in the file, the contaminants removed by position are
-returned via standard out. For example:
+returned via standard error. For example:
 
     Adapter 1 'fake adapter' contamination occurences:
     [10, 2, 4, 5, 6]
