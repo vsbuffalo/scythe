@@ -3,6 +3,8 @@ library(lattice)
 ## source read simulation functions
 source('read-sim.R')
 
+if (!file.exists("sim-reads"))
+  dir.create("sim-reads")
 
 contam.rates <- seq(0, 0.9, 0.1)
 
