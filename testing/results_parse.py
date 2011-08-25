@@ -109,4 +109,4 @@ if total_positives > 0:
     print "total negatives\t", total_negatives
     print "false negative rate\t", (false_negatives)/float(total)
     print "sensitivity\t", true_positives/float(contaminated) if contaminated > 0 else 0
-    print "specificity\t", 1-false_positives/float(total)
+    print "specificity\t", true_negatives/(false_positives + true_negatives)
