@@ -20,8 +20,10 @@ prior.data <- lapply(contam.rates, function(contam.rate) {
     system(sprintf("../scythe -t -n 0 -a ../solexa_adapters.fa -p %f -m results/matches-prior-%f.txt -o results/out-prior-%f.fastq sim-reads/sim-reads-%f.fastq", prior, prior, prior, contam.rate), intern=TRUE)
 
     cmd <- sprintf("python results_parse.py -m results/matches-prior-%f.txt -r sim-reads/sim-reads-%f.fastq -t results/out-prior-%f.fastq > results/results-prior-%f.txt", prior, contam.rate, prior, prior)
-    system(cmd, intern=TRUE)
+    ok <- system(cmd)
+    stopifnot(ok == 0)
     tmp <- t(read.table(sprintf("results/results-prior-%f.txt", prior), header=FALSE, sep="\t"))
+    browser()
     if (ncol(tmp) < 5)
       return(NULL)
 
