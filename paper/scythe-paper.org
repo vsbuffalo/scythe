@@ -1,0 +1,32 @@
+#+title: Scythe: A tool for removing 3'-end adapter contaminants using Bayesian classification
+#+author: Vince Buffalo
+#+email: vsbuffalo@ucdavis.edu
+#+date: 
+#+babel: :results output :exports both :session :comments org
+
+* 3'-end Contamination
+
+Scythe focuses on 3'-end contaminants, specifically those due to
+adapters or barcodes. 3'-end quality deterioration is common to many
+modern 2nd-generation sequencers makes 3'-end contamination removal a
+more difficult problem than contamination in other parts of the
+read. Furthermore, such quality deterioration is not uniform across
+all reads or 3'-end bases in reads; as figure 1 shows, there is
+variation in quality per base.
+
+Fixed number of mismatch contaminate removers (such as tagdust and
+cutadapt) fail to recognize contaminants in very poor quality regions
+in which most bases may be called incorrectly. One could trim low
+quality bases first, but this would remove contaminant sequence, which
+(although unreliable) is information that could lead to more accurate
+identification and removal. 
+
+* Scythe Methods
+
+Scythe uses Bayesian methods to identify contaminants. Very simply, it
+finds out which of the following events is more probable: random
+sequence matching contaminant sequence with the same number of
+mismatches, or real contaminant sequence having mismatches due to base
+calling errors.
+
+If $\mathbf{S}$ is the sequence
