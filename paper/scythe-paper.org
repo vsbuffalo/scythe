@@ -7,19 +7,30 @@
 * 3'-end Contamination
 
 Scythe focuses on 3'-end contaminants, specifically those due to
-adapters or barcodes. 3'-end quality deterioration is common to many
-modern 2nd-generation sequencers makes 3'-end contamination removal a
-more difficult problem than contamination in other parts of the
-read. Furthermore, such quality deterioration is not uniform across
-all reads or 3'-end bases in reads; as figure 1 shows, there is
-variation in quality per base.
+adapters or barcodes. Many second-generation sequencing technologies
+such as Illumina's Genome Analyzer II and HiSeq have lower-quality
+3'-end bases. These low-quality bases are more likely to have
+nucleotides called incorrectly, making contaminant identification more
+difficult. Futhermore, 3'-end quality deterioration is not uniform
+across all reads; as figure 1 shows, there is variation in the quality
+per base.
 
-Fixed number of mismatch contaminate removers (such as tagdust and
-cutadapt) fail to recognize contaminants in very poor quality regions
-in which most bases may be called incorrectly. One could trim low
-quality bases first, but this would remove contaminant sequence, which
-(although unreliable) is information that could lead to more accurate
-identification and removal. 
+A common step in read quality improvement procedures is to remove
+these low-quality 3'-end sequences from reads. This is thought to
+increase mapping rates and improve assembly quality. However doing
+quality-based 3'-end trimming before contaminant removal would remove
+sequence that could be used (despite being unreliable) to identify the
+contaminants more positively. Scythe supposes that it's better to use
+full information, even if it's unreliable. How unreliable a base is is
+indicated by the FASTQ quality score, which can be incorporated into
+classification procedures.
+
+Fixed-number of mismatch approaches have the disadvantage that they
+don't differentially weight a mismatch on a low-quality base, and
+mismatch on a high-quality base. Futhermore, the fixed-number could
+easily be exhausted in a run of bad bases, even though every
+good-quality base perfectly matches the contaminant sequence.
+
 
 * Scythe Methods
 
@@ -29,4 +40,6 @@ sequence matching contaminant sequence with the same number of
 mismatches, or real contaminant sequence having mismatches due to base
 calling errors.
 
-If $\mathbf{S}$ is the sequence
+In Bayesian terms, there are two mutually exclusive and exhaustive
+events: there is a contaminant in the sequence, or there isn't.
+
