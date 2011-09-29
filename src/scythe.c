@@ -115,6 +115,7 @@ int main(int argc, char *argv[]) {
   gzFile adapter_fp=NULL, output_fp=stdout, matches_fp=NULL, fp;
   int optc;
   char *match_string;
+  int add_tag = 0;
   char tag[14] = "";
   extern char *optarg;
 
@@ -138,8 +139,9 @@ int main(int argc, char *argv[]) {
         debug = 1;
         break;
       case 't':
+        add_tag = 1;
         strcpy(tag, ";;cut_scythe");
-        printf("%s\n",tag);
+        printf("%s\n", tag);
         break;
       case 'Q':
         verbose = 0;
@@ -238,11 +240,17 @@ int main(int argc, char *argv[]) {
       /* Best match was classified as contaminated, print trimmed
          results and match entry (if specified). */
       contaminated++;
-      fprintf(output_fp, 
-              "@%s%s\n%.*s\n+%s%s\n%.*s\n", seq->name.s, tag,
-              (int) seq->seq.l-best_match->n, seq->seq.s, seq->name.s, tag, 
-              (int) seq->seq.l-best_match->n, seq->qual.s);
-      
+      if (add_tag) {
+        fprintf(output_fp, 
+                "@%s%s-%d\n%.*s\n+%s%s-%d\n%.*s\n", seq->name.s, tag, best_match->n, 
+                (int) seq->seq.l-best_match->n, seq->seq.s, seq->name.s, tag, best_match->n, 
+                (int) seq->seq.l-best_match->n, seq->qual.s);
+      } else {
+        fprintf(output_fp, 
+                "@%s\n%.*s\n+%s\n%.*s\n", seq->name.s,
+                (int) seq->seq.l-best_match->n, seq->seq.s, seq->name.s,
+                (int) seq->seq.l-best_match->n, seq->qual.s);
+      }
       /* print match for 5'-end; seq->seq.s is point to the
          approperiate place by taking the sequence length and
          subtracting the match length. */    

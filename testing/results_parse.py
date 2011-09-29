@@ -83,11 +83,20 @@ for block in matchesIter(options.matches_file):
 ## Gather statistics on the number of false negatives from clipped file
 false_negatives = 0
 true_negatives = 0
+contam_diff = dict()
+
 for block in FASTQIter(options.trimmed_file):
-    if re.search(r"-contaminated-[0-9]+$", block['header']) is not None:
+    if re.search(r"-contaminated-[0-9]+", block['header']) is not None:
         false_negatives += 1
     if re.search(r"-uncontaminated$", block['header']) is not None:
         true_negatives += 1
+    m = re.match(r".*-contaminated-([0-9]+);;cut_scythe-([0-9]+)", block['header'])
+    if m is not None:
+        n_contam, n_cut = m.group(1, 2)
+        d = n_contam - n_cut
+        contam_diff[d] = contam_diff.get(d, 0) + 1
+
+print "contam diff\t", contam_diff
 
 if total_positives > 0:
     true_positives = total_positives - false_positives
