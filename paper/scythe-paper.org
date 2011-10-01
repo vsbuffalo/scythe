@@ -32,14 +32,93 @@ easily be exhausted in a run of bad bases, even though every
 good-quality base perfectly matches the contaminant sequence.
 
 
-* Scythe Methods
+* Scythe's Methods
 
-Scythe uses Bayesian methods to identify contaminants. Very simply, it
-finds out which of the following events is more probable: random
-sequence matching contaminant sequence with the same number of
-mismatches, or real contaminant sequence having mismatches due to base
-calling errors.
+Scythe uses Bayesian methods to identify 3'-end contaminants. Scythe
+does not address the problem of contaminants found anywhere in the
+read; contaminants in higher quality regions are easier to identify
+and fixed-number of mismatch techniques are accurate and
+fastest. Scythe only addresses the challenging problem of contaminants
+in low-quality 3-ends. In doing so, it makes some assumptions:
 
-In Bayesian terms, there are two mutually exclusive and exhaustive
-events: there is a contaminant in the sequence, or there isn't.
+1. All contaminants sequences are known /a priori/.
+2. A contaminant sequence with length $l_c$ in a read of length $l_r$
+   will only be found between $l_r - l_c$  and $l_r$.
+3. If the read is contaminated, the number of bases contaminating the
+   read $c$ is limited to $1 \le c \le l_c$, and always beginning from
+   the 5'-end of the contaminant sequence. While this seems limiting,
+   it is the mode by which 3'-end adapter and barcode contamination
+   occurs.[fn:: We have encountered Illumina data in which adapters
+   contaminate the read and are present past their length in the
+   3'-end. The sequence after the adapter was all poly-A
+   sequence. These extreme cases can be removed by appending poly-A
+   sequence to the end of the adapters in the adapters file.]
+4. Contaminants will only have mismatching bases; no contaminants with
+   insertions, deletions, or transpositions will be addressed by Scythe.
+5. The quality line of the FASTQ file accurately estimates the
+   probability of bases being called correctly.
+
+** String matching in Scythe
+
+Scythe begins by searching for a lenght of contaminant in the
+read. For each adapter in the file, Scythe looks for the best match in
+terms of scores. A nucleotide match is scored as a 1, and a mismatch
+is scored as a -1. Because Scythe doesn't address contaminants with
+insertions or deletions, it doesn't use a standard alignment strategy
+(e.g. dynamic programming). Instead, it considers every possible
+substring of contamination: for a contaminant of length $l_c$, it
+scores all possible substrings from the 5'-end of the contaminant. The
+top scoring match is then used in the classification procedure. For
+efficiency, other matches are not used in the classification
+procedure.[fn:: This option may be added to further Scythe versions.]
+
+** Bayesian classification of top-scoring matches
+
+There are two mutually exclusive and exhaustive events: a top scoring
+match is a contaminant or it is random sequence (that happens to be
+similar to the adapter contaminant). A likelihood for each of these
+events, given probabilities of each base being called correctly and
+which bases mismatch the contaminant sequence, can be calculated.
+
+These likelihood functions assume models of error for each event. If
+the top-scoring match is contaminant sequence (event $C$), the
+likelihood $P(S | C)$ (where $S$ is the sequence match data) is:
+
+$$ P(S | C) = \prod_i^{l_t} q_i^{m_i} \cdot (1-q_i)^{1 - m_i} $$
+
+Where $m_i \in \{0, 1\}$ indicating whether the $i$th base is a
+mismatch or match, respectively and $q_i$ is the probability the $i$th
+base is called correctly (from the ASCII-encoded quality). $l_t$ is
+the length of the top-scoring match.
+
+If the top-scoring sequence is not a contaminant sequence (event $C'$), it's
+assumed that the matches are just by chance. Thus, the likelihood
+function is:
+
+$$ P(S | C') = \prod_i^{l_t} \left(\frac{1}{4}\right)^{m_i} \cdot \left(\frac{3}{4}\right)^{1 - m_i} $$
+
+These likelihoods can then be combined using Bayes' Thereom to give
+the probability of contamination given then top-scoring match:
+
+$$ P(C|S) = \frac{P(C) P(S|C)}{P(S)} $$
+
+Where the denominator can be replaced with $P(S) = P(S | C)P(C) +
+P(S | C') P(C')$. $P(C'|S)$ is calculated similarly. Since these are
+mutually exclusive and exhaustive events, the /maximum a posteriori/
+rule can be used to classify a top-scoring sequence as either
+contaminated or non-contaminated (e.g. if $P(C'|S) > P(C|S)$, the
+sequence is not contaminated and visa-versa).
+
+Required in this Bayesian formulation is the prior of contamination,
+$P(C)$. Specifying the prior may seem like a nuisance, but it allows
+ultimately allows for more accurate classification in a variety of
+different contamination scenarios. The prior doesn't need to be
+estimated increadibly well; one technique that works well is to view
+the FASTQ file in the Unix command line tool less and search for the
+5'-end bases of the adapter contaminant. The number of results on a
+page of less output diveded by the number of FASTQ entries on that
+page works well as an initial guess for the prior.
+
+* Results
+
 
