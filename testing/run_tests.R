@@ -3,6 +3,13 @@ library(lattice)
 ## source read simulation functions
 source('read-sim.R')
 
+pythonDictConvert <- function(x) {
+  # convert python dict to dataframe
+  tmp <- substr(x, 2, nchar(x)-1) # move braces
+  tmp <- unlist(strsplit(tmp, ", "))
+  as.data.frame(do.call(rbind, strsplit(tmp, ": ")))
+}
+
 if (!file.exists("sim-reads"))
   dir.create("sim-reads")
 
@@ -23,13 +30,23 @@ prior.data <- lapply(contam.rates, function(contam.rate) {
     ok <- system(cmd)
     stopifnot(ok == 0)
     tmp <- t(read.table(sprintf("results/results-prior-%f.txt", prior), header=FALSE, sep="\t"))
-    browser()
-    if (ncol(tmp) < 5)
+
+    if (ncol(tmp) < 6)
       return(NULL)
 
+    ## process contam diff
+    contam.diff <- tmp[, tmp[1, ] == "contam diff"][2]
+    contam.diff <- pythonDictConvert(contam.diff)
+    
     d <- as.numeric(t(tmp[2, ]))
     dim(d) <- c(1, length(d))
     colnames(d) <- tmp[1, ]
+
+    # write contam diffs to be processed later
+    if (length(contam.diff) >= 2) {
+      colnames(contam.diff) <- c("diff", "count")
+      write.table(contam.diff, file.path("results", sprintf("prior-%f-contam-%f-diffs.txt", prior, contam.rate)), sep="\t", quote=FALSE)
+    }
     as.data.frame(d)
   })
   include <- !unlist(lapply(out, is.null))
