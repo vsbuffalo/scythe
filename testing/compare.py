@@ -3,6 +3,7 @@
 
 from optparse import OptionParser
 import re
+import sys
 
 parser = OptionParser()
 parser.add_option("-r", "--readsfile", dest="reads_file",
@@ -65,10 +66,13 @@ trimmed = 0
 untrimmed = 0
 total = 0
 
+total_positives = 0
+total_negatives = 0
 false_positives = 0
 true_positives = 0
 true_negatives = 0
 false_negatives = 0
+contam_diff = dict()
 
 for reads_block, trimmed_block in FASTQPairIter(options.reads_file, options.trimmed_file):
     total += 1
@@ -82,10 +86,21 @@ for reads_block, trimmed_block in FASTQPairIter(options.reads_file, options.trim
         is_contaminated = True
         contaminated += 1
 
+    # For simple accuracy
     is_trimmed = len(reads_block['seq']) > len(trimmed_block['seq'])
+
+    # More complex (not only trimmed, but trimmed correctly)
+    m = re.match(r".*-contaminated-([0-9]+)", reads_block['header'])
+    if m is not None:
+        m = int(m.group(1))
+        offset = (len(reads_block['seq']) - len(trimmed_block['seq'])) - m
+        contam_diff[offset] = contam_diff.get(offset, 0) + 1
+
     trimmed += int(is_trimmed)
     untrimmed += int(not is_trimmed)
 
+    if is_trimmed:
+        total_positives += 1
     if is_trimmed and is_contaminated:
         true_positives += 1
     if is_trimmed and not is_contaminated:
@@ -97,4 +112,36 @@ for reads_block, trimmed_block in FASTQPairIter(options.reads_file, options.trim
 
 ## check that confusion matrix values add up as they should
 assert(contaminated == true_positives + false_negatives)
-assert(uncontaminated == false_positives + true_negatives)    
+assert(uncontaminated == false_positives + true_negatives)
+
+# make string of offsets
+offset_string = "".join(["%s\t%s\n" % (k, v) for k, v in contam_diff.items()])
+sys.stderr.write(offset_string)
+
+
+print "contaminated\t", contaminated
+print "uncontaminated\t", uncontaminated
+print "contamination rate\t", contaminated/float(total) if total > 0 else 0
+print "total\t", total
+print "trimmed\t", trimmed
+print "untrimmed\t", untrimmed
+
+if total_positives > 0:
+    true_positives = total_positives - false_positives
+    total_negatives = true_negatives + false_negatives
+
+    ## check that confusion matrix values add up as they should
+    assert(contaminated == true_positives + false_negatives)
+    assert(uncontaminated == false_positives + true_negatives)    
+
+    print "false positives\t", false_positives
+    print "true positives\t", true_positives
+    print "total positives\t", total_positives
+    print "false positive rate\t", false_positives/float(total)
+
+    print "true negatives\t", true_negatives
+    print "false negatives\t", false_negatives
+    print "total negatives\t", total_negatives
+    print "false negative rate\t", (false_negatives)/float(total)
+    print "sensitivity\t", true_positives/float(contaminated) if contaminated > 0 else 0
+    print "specificity\t", true_negatives/float(false_positives + true_negatives)

@@ -3,6 +3,7 @@
 
 from optparse import OptionParser
 import re
+import sys
 
 parser = OptionParser()
 parser.add_option("-r", "--readsfile", dest="reads_file",
@@ -96,7 +97,10 @@ for block in FASTQIter(options.trimmed_file):
         d = int(n_contam) - int(n_cut)
         contam_diff[d] = contam_diff.get(d, 0) + 1
 
-print "contam diff\t", contam_diff
+# make string of offsets
+offset_string = "".join(["%s\t%s\n" % (k, v) for k, v in contam_diff.items()])
+#sys.stderr.write(offset_string)
+print offset_string
 
 if total_positives > 0:
     true_positives = total_positives - false_positives

@@ -127,4 +127,3 @@ page works well as an initial guess for the prior.
 
 * Results
 
-
