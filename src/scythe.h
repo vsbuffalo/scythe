@@ -85,6 +85,7 @@ void print_float_array(const float *array, int n);
 void fprint_float_array(FILE *fp, const float *array, int n);
 void print_int_array(const int *array, int n);
 void print_uint_array(const unsigned int *array, int n);
+void fprint_uint_array(FILE *fp, const unsigned int *array, int n);
 int sum(const int *x, int n);
 
 /* match.c prototypes */
