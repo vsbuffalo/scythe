@@ -38,7 +38,7 @@ match *find_best_match(const adapter_array *aa, const char *read,
   float *best_p_quals; /* for the subset of read qualities of the matching sequence */
   for (i = 0; i < aa->n; i++) {
     if (min >= aa->adapters[i].length) {
-      fprintf(stderr, "error: Minimum match length (option -n) greater than or equal to length of adapter.\n");
+      fprintf(stderr, "Minimum match length (option -n) greater than or equal to length of adapter.\n");
       exit(EXIT_FAILURE);
     }
     for (l = (aa->adapters[i]).length; l > min; l--) {

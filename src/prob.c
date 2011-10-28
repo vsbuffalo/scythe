@@ -28,7 +28,7 @@ float *qual_to_probs(const char *qual, quality_type q_type) {
   for (i = 0; i < n; i++) {
     q = (char) qual[i]-quality_contants[q_type][Q_OFFSET];
     if (q < quality_contants[q_type][Q_MIN] || q > quality_contants[q_type][Q_MAX]) {
-      fprintf(stderr, "Base quality out of range for specifed quality type (%d): %d", q_type, q);
+      fprintf(stderr, "Base quality out of range for specifed quality type (%d): %d\n", q_type, q);
       exit(EXIT_FAILURE);
     }
     if (q_type == SOLEXA) {
