@@ -23,13 +23,18 @@ float *qual_to_probs(const char *qual, quality_type q_type) {
 
      From http://en.wikipedia.org/wiki/FASTQ.
   */
-  int i, n = strlen(qual);
+  int i, n = strlen(qual), q;
   float *probs = xmalloc(sizeof(float)*n);
   for (i = 0; i < n; i++) {
+    q = (char) qual[i]-quality_contants[q_type][Q_OFFSET];
+    if (q < quality_contants[q_type][Q_MIN] || q > quality_contants[q_type][Q_MAX]) {
+      fprintf(stderr, "Base quality out of range for specifed quality type (%d): %d", q_type, q);
+      exit(EXIT_FAILURE);
+    }
     if (q_type == SOLEXA) {
-        probs[i] = 1 - 1/(1 + powf(10, ((char) qual[i]-quality_contants[SOLEXA][Q_OFFSET])/10.0));
+      probs[i] = 1 - 1/(1 + powf(10, (q/10.0)));
     } else {
-      probs[i] = 1 - 1/(powf(10, ((char) qual[i]-quality_contants[q_type][Q_OFFSET])/10.0));
+      probs[i] = 1 - 1/(powf(10, (q/10.0)));
     }
   }
   return probs;
