@@ -195,6 +195,7 @@ print "contamination rate\t", contaminated/float(total) if total > 0 else 0
 print "total\t", total
 print "trimmed\t", trimmed
 print "untrimmed\t", untrimmed
+print "left_out\t", left_out
 
 true_positives = total_positives - false_positives
 total_negatives = true_negatives + false_negatives
