@@ -4,6 +4,7 @@
 from optparse import OptionParser
 import re
 import sys
+import pdb
 
 parser = OptionParser()
 parser.add_option("-r", "--readsfile", dest="reads_file",
@@ -101,14 +102,16 @@ contam_diff = dict()
 ## entire FASTQ entries.
 store = FASTQStore(options.reads_file, options.trimmed_file)
 
+## We need to verify nothing funky is going on with the data.
+## First, check that all headers (keys) have reads entries:
+
+if not all([len(data['reads']) == 2 for header, data in store.items()]):
+    raise Exception, "Simulated reads do not all have entries - are you using different reads file from trimmed file?"
+
 for header in store:
     total += 1
 
     block = store[header]
-
-    ## Check if the trimmer removed this read
-    if (len(block) == 1):
-        left_out += 1
 
     # Check if this is a contaminated or uncontaminated entry using
     # headers from simulated reads.
@@ -120,15 +123,25 @@ for header in store:
         is_contaminated = True
         contaminated += 1
 
-    # For simple accuracy
-    is_trimmed = len(block['reads']['seq']) > len(block['trimmed']['seq'])
+    ## Check if the trimmer removed this read entirely
+    if len(block['trimmed']) == 0:
+        left_out += 1
+        is_trimmed = True # we consider this trimming the entire read
 
-    # More complex (not only trimmed, but trimmed correctly)
-    m = re.match(r".*-contaminated-([0-9]+)", header)
-    if m is not None and is_trimmed and is_contaminated:
-        m = int(m.group(1))
-        offset = (len(block['reads']['seq']) - len(block['trimmed']['seq'])) - m
+        offset = len(block['reads']['seq'])
         contam_diff[offset] = contam_diff.get(offset, 0) + 1
+    elif len(block['trimmed']) == 2:
+        # For simple accuracy
+        is_trimmed = len(block['reads']['seq']) > len(block['trimmed']['seq'])
+
+        # More complex (not only trimmed, but trimmed correctly)
+        m = re.match(r".*-contaminated-([0-9]+)", header)
+        if m is not None and is_trimmed and is_contaminated:
+            m = int(m.group(1))
+            offset = (len(block['reads']['seq']) - len(block['trimmed']['seq'])) - m
+            contam_diff[offset] = contam_diff.get(offset, 0) + 1
+    else:
+        is_trimmed = False
 
     trimmed += int(is_trimmed)
     untrimmed += int(not is_trimmed)
