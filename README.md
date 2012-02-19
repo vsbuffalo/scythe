@@ -1,8 +1,8 @@
-# Scythe - A very simple adapter trimmer (version 0.98 BETA)
+# Scythe - A very simple adapter trimmer (version 0.981 BETA)
 
 Contact: Vince Buffalo <vsbuffaloAAAAA@gmail.com> (with the poly-A tail removed)
 
-Copyright (c) 2011 The Regents of University of California, Davis Campus.
+Copyright (c) Vince Buffalo, 2011-2012
 
 ## About
 
