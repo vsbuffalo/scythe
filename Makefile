@@ -45,4 +45,4 @@ build: match.o scythe.o util.o prob.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $? -o scythe
 
 debug:
-	$(MAKE) build "CFLAGS=-Wall -pedantic -g -DDEBUG"
+	$(CC) $(LDFLAGS) $(DEBUG) -o scythe src/*.c

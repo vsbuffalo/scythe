@@ -14,7 +14,10 @@
 
 #define MIN(a,b) ((a)>(b)?(b):(a))
 
-KSEQ_INIT(gzFile, gzread)
+__KS_GETC(gzread, BUFFER_SIZE)
+__KS_GETUNTIL(gzread, BUFFER_SIZE)
+__KSEQ_READ
+
 
 void *xmalloc(size_t size) {
   void *ret = malloc(size);
@@ -168,4 +171,51 @@ int sum(const int *x, int n) {
   for (i = 0; i < n; i++)
     s += x[i];
   return s;
+}
+
+void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, char *tag, int match_n) {
+  /* Heng Li's kseq.h handles FASTQ headers as such: anything after
+     the first space is put in the field "comment" of the kseq_t
+     struct. This function writes a single FASTQ block and wraps
+     simple fprintf such that we don't have to worry about whether
+     there's a comment or not. This has a variety of arguments for
+     different output options,
+  */
+  if (match_n > 0) {
+    /* If match_n is the number of matches we have to trim by, so
+       output trimmed FASTQ seq (and possible header if add_tag is
+       true. */
+    if (add_tag) {
+      if (seq->comment.s)
+        fprintf(output_fp, 
+                "@%s %s%s-%d\n%.*s\n+%s %s%s-%d\n%.*s\n", seq->name.s, seq->comment.s, tag, match_n, 
+                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, seq->comment.s, tag, match_n, 
+                (int) seq->seq.l-match_n, seq->qual.s);
+      else 
+        fprintf(output_fp, 
+                "@%s%s-%d\n%.*s\n+%s%s-%d\n%.*s\n", seq->name.s, tag, match_n, 
+                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, tag, match_n, 
+                (int) seq->seq.l-match_n, seq->qual.s);
+
+    } else {
+      if (seq->comment.s)
+        fprintf(output_fp, 
+                "@%s %s\n%.*s\n+%s %s\n%.*s\n", seq->name.s, seq->comment.s,
+                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, seq->comment.s,
+                (int) seq->seq.l-match_n, seq->qual.s);
+      else
+        fprintf(output_fp, 
+                "@%s\n%.*s\n+%s\n%.*s\n", seq->name.s,
+                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s,
+                (int) seq->seq.l-match_n, seq->qual.s);
+
+    }
+  } else { 
+    if (seq->comment.s)
+      fprintf(output_fp, 
+              "@%s %s\n%s\n+%s %s\n%s\n", seq->name.s, seq->comment.s, seq->seq.s, seq->name.s, seq->comment.s, seq->qual.s);
+  else
+      fprintf(output_fp, 
+              "@%s\n%s\n+%s\n%s\n", seq->name.s, seq->seq.s, seq->name.s, seq->qual.s);
+  }
 }

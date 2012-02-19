@@ -2,7 +2,26 @@
 #define SCYTHE_H
 
 #include <zlib.h>
+#include "kseq.h"
 
+/* KSEQ_INIT() cannot be called here, because we only need the types
+   defined. Calling KSEQ_INIT() would also define functions, leading
+   to an unused function warning with GCC. So, the basic typedefs
+   kseq.h has are included here, and each file that reads needs:
+   
+   This was a fix also used in Nik Joshi's Sickle (which I also helped
+   with) and is the only way I know of dealing with this.
+
+   __KS_GETC(gzread, BUFFER_SIZE)
+   __KS_GETUNTIL(gzread, BUFFER_SIZE)
+   __KSEQ_READ
+*/
+
+#define BUFFER_SIZE 4096
+__KS_TYPE(gzFile)
+__KS_BASIC(gzFile, BUFFER_SIZE)
+__KSEQ_TYPE(gzFile)
+__KSEQ_BASIC(gzFile)
 
 #define MAX_ADAPTERS 20
 #define MATCH_SCORE 1
@@ -87,6 +106,7 @@ void print_int_array(const int *array, int n);
 void print_uint_array(const unsigned int *array, int n);
 void fprint_uint_array(FILE *fp, const unsigned int *array, int n);
 int sum(const int *x, int n);
+void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, char *tag, int match_n);
 
 /* match.c prototypes */
 int *score_sequence(const char *seqa, const char *seqb, int n);

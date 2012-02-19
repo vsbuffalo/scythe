@@ -25,10 +25,10 @@ these low-quality 3'-end sequences from reads. This is thought to
 increase mapping rates and improve assembly quality. However doing
 quality-based 3'-end trimming before contaminant removal would remove
 sequence that could be used (despite being unreliable) to identify the
-contaminants more positively. Scythe supposes that it's better to use
-full information, even if it's unreliable. How unreliable a base is is
-indicated by the FASTQ quality score, which can be incorporated into
-classification procedures.
+contaminants more positively. Scythe takes the approach that it is
+better to use full information, even if it's unreliable. How
+unreliable a base is is indicated by the FASTQ quality score, which
+can be incorporated into classification procedures.
 
 Fixed-number of mismatch approaches have the disadvantage that they
 don't differentially weight a mismatch on a low-quality base from a
@@ -46,7 +46,7 @@ and fixed-number of mismatch techniques are accurate and
 fastest. Scythe only addresses the challenging problem of contaminants
 in low-quality 3-ends. In doing so, it makes some assumptions:
 
-1. All contaminants sequences are known /a priori/.
+1. All contaminants sequences are known /a priori/ and are reliable.
 2. A contaminant sequence with length $l_c$ in a read of length $l_r$
    will only be found between $l_r - l_c$  and $l_r$.
 3. If the read is contaminated, the number of bases contaminating the
@@ -70,12 +70,15 @@ read. For each adapter in the file, Scythe looks for the best match in
 terms of scores. A nucleotide match is scored as a 1, and a mismatch
 is scored as a -1. Because Scythe doesn't address contaminants with
 insertions or deletions, it doesn't use a standard alignment strategy
-(e.g. dynamic programming). Instead, it considers every possible
+(i.e. dynamic programming). Instead, it considers every possible
 substring of contamination: for a contaminant of length $l_c$, it
 scores all possible substrings from the 5'-end of the contaminant. The
 top scoring match is then used in the classification procedure. For
 efficiency, other matches are not used in the classification
 procedure.[fn:: This option may be added to further Scythe versions.]
+
+The time complexity of Scythe's match algorithm for a single adapter
+of length is $l_a$ $O(l_a^2 * R)$ for a FASTQ file with $R$ entries.
 
 ** Bayesian classification of top-scoring matches
 
@@ -127,3 +130,9 @@ page works well as an initial guess for the prior.
 
 * Results
 
+Scythe was tested against two similar program: Btrim (Kong, 2011) and
+Cutadapt (Martin, 2011). Btrim
+
+Cutadapt has an advantage over Scythe in that it does gapped
+alignments (originally it was developed to trim 454 sequences which
+have homopolymer repeats).

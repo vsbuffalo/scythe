@@ -14,7 +14,10 @@
 #include "scythe.h"
 #include "kseq.h"
 
-KSEQ_INIT(gzFile, gzread)
+__KS_GETC(gzread, BUFFER_SIZE)
+__KS_GETUNTIL(gzread, BUFFER_SIZE)
+__KSEQ_READ
+
 static const float default_prior = 0.05;
 
 #ifndef PROGRAM_NAME
@@ -240,17 +243,10 @@ int main(int argc, char *argv[]) {
       /* Best match was classified as contaminated, print trimmed
          results and match entry (if specified). */
       contaminated++;
-      if (add_tag) {
-        fprintf(output_fp, 
-                "@%s%s-%d\n%.*s\n+%s%s-%d\n%.*s\n", seq->name.s, tag, best_match->n, 
-                (int) seq->seq.l-best_match->n, seq->seq.s, seq->name.s, tag, best_match->n, 
-                (int) seq->seq.l-best_match->n, seq->qual.s);
-      } else {
-        fprintf(output_fp, 
-                "@%s\n%.*s\n+%s\n%.*s\n", seq->name.s,
-                (int) seq->seq.l-best_match->n, seq->seq.s, seq->name.s,
-                (int) seq->seq.l-best_match->n, seq->qual.s);
-      }
+
+      /* Write out the trimmed sequence, with optional tag added */
+      write_fastq(output_fp, seq, add_tag, tag, best_match->n);
+
       /* print match for 5'-end; seq->seq.s is point to the
          approperiate place by taking the sequence length and
          subtracting the match length. */    
@@ -275,9 +271,10 @@ int main(int argc, char *argv[]) {
       aa->adapters[best_match->adapter_index].occurrences[best_match->n-1]++;
 
     } else {
-      /* No trimming done; print sequence as is. */
-      fprintf(output_fp, 
-              "@%s\n%s\n+%s\n%s\n", seq->name.s, seq->seq.s, seq->name.s, seq->qual.s);
+      /* No trimming done; print sequence as is; no tagging because
+         it's not trimmed.
+      */
+      write_fastq(output_fp, seq, 0, NULL, -1);
     }
     
     if (best_match)
