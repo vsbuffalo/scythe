@@ -1,8 +1,13 @@
 # Scythe - A very simple adapter trimmer (version 0.981 BETA)
 
+Scythe and all supporting documentation 
+Copyright (c) Vince Buffalo, 2011-2012
+
 Contact: Vince Buffalo <vsbuffaloAAAAA@gmail.com> (with the poly-A tail removed)
 
-Copyright (c) Vince Buffalo, 2011-2012
+If you wish to report a bug, please open an issue on Github
+(http://github.com/vsbuffalo/scythe/issues) so that it can be
+tracked. You can contact me as well, but please open an issue first.
 
 ## About
 
@@ -146,5 +151,41 @@ returned), and that there were 10 contaminants found of first base (-n
 was set to 0 then), 2 of the first two bases, 4 contaminants of the
 first 3 bases, 5 of the first 4 bases, etc.
 
+### Does Scythe work on FASTA files?
 
+No, as these have no quality information.
 
+### How can I report a bug? 
+
+See the section below.
+
+### How does Scythe compare to program "x"?
+
+As far as I know, Scythe is the only program that employs a Bayesian
+model that allows prior contaminant estimates to be used. This prior
+is a more realistic approach than setting a fixed number of mismatches
+because we can visually estimate it with the Unix tool `less`.
+
+Scythe also looks at base-level qualities, *not* just a fixed level of
+mismatches. A fixed number of mismatches is a bad approach with data
+our group (the UC Davis Bioinformatics Core) has seen, as a small bad
+quality run can quickly exhaust even a high numbers of fixed
+mismatches and lead to higher false negatives.
+
+## Reporting Bugs
+
+Scythe is free software and is proved without a warranty. However, I
+am proud of this software and I will do my best to provide updates,
+bug fixes, and additional documentation as needed. Please report all
+bugs and issues to Github's issue tracker
+(http://github.com/vsbuffalo/scythe/issues). If you want to email me,
+do so in addition to an issue request.
+
+If you have a suggestion or comment on Scythe's methods, you can email
+me directly.
+
+## Is there a paper about Scythe?
+
+I am currently writing a paper on Scythe's methods. In my preliminary
+testing, Scythe has fewew false positives and false negatives than
+it competitors.
