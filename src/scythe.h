@@ -23,7 +23,7 @@ __KS_BASIC(gzFile, BUFFER_SIZE)
 __KSEQ_TYPE(gzFile)
 __KSEQ_BASIC(gzFile)
 
-#define MAX_ADAPTERS 20
+#define MAX_ADAPTERS 1000
 #define MATCH_SCORE 1
 #define MISMATCH_SCORE -1
 
