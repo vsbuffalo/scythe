@@ -77,14 +77,26 @@ Lastly, a minimum match length argument can be specified with -n <integer>:
 
 ## Notes
 
+If you are multiplexing samples using "in-line" barcodes (nucleotides added
+to one or the other Solexa adapter sequence), you will need to prepend the
+reverse-complement of the barcode to one or both of the adapter sequences
+in "solexaAdapters_original.fa" (depending on whether barcodes were added
+to one or both adapter). If you are multiplexing samples using Illumina's
+TruSeq adapter, you should replace the text "[barcode]" in
+"illuminaAdapter_TruSeq.fa" with the 6 bp sequence found in the filenames
+of reads demultiplexed by Illumina's pipeline, e.g.:
+FOO_ACAGTG_L006_R1_001.fastq.gz
+... ACAGTG is how the barcode will appear within the adapter sequence
+provided.
+
 Scythe only checks for 3'-end contaminants, up to the adapter's length
 into the 3'-end. For reads with contamination in *any* position, the
 program TagDust (<http://genome.gsc.riken.jp/osc/english/dataresource/>)
 is recommended. Scythe has the advantages of allowing fuzzier matching
 and being base quality-aware, while TagDust has the advantages of very
 fast matching (but allowing few mismatches, and not considering
-quality) and FDR. TagDust also removes contaminated reads *entirely*, while
-Scythe trims off contaminants. 
+quality) and FDR. Note that TagDust removes contaminated reads *entirely*,
+while Scythe trims off contaminating sequence, leaving valuable reads!
 
 A possible pipeline would run FASTQ reads through Scythe, then
 TagDust, then a quality-based trimmer, and finally through a read
