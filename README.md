@@ -77,13 +77,19 @@ Lastly, a minimum match length argument can be specified with -n <integer>:
 
 ## Notes
 
+Included in this distribution are two fasta files containing sequences
+that we've observed as frequent contaminants at the 3'-ends of Illumina
+reads, that we interpret to come from adapter sequences. We are in no way
+passing on sequence information from Illumina, Inc., and we make no claims
+about the accuracy or identity of the sequences in "3primeContam_old.fa"
+and "3primeContam_new.fa" ... USE AT YOUR OWN RISK!
 If you are multiplexing samples using "in-line" barcodes (nucleotides added
 to one or the other Solexa adapter sequence), you will need to prepend the
 reverse-complement of the barcode to one or both of the adapter sequences
-in "solexaAdapters_original.fa" (depending on whether barcodes were added
+in "3primeContam_old.fa" (depending on whether barcodes were added
 to one or both adapter). If you are multiplexing samples using Illumina's
 TruSeq adapter, you should replace the text "[barcode]" in
-"illuminaAdapter_TruSeq.fa" with the 6 bp sequence found in the filenames
+"3primeContam_new.fa" with the 6 bp sequence found in the filenames
 of reads demultiplexed by Illumina's pipeline, e.g.:
 FOO_ACAGTG_L006_R1_001.fastq.gz
 ... ACAGTG is how the barcode will appear within the adapter sequence
