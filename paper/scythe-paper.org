@@ -7,11 +7,11 @@
 
 #+begin_abstract
 *Motivation:* Modern sequencing technologies can leave artifactual
- contaminant sequences at the 3'-end of reads. 3'-end regions are also
- have the lowest quality bases and likely to be called incorrectly,
- which makes identifying and removing 3'-end contaminants
+ contaminant sequences at the 3'-end of reads. 3'-end regions also
+ have the lowest quality bases that are likely to be called
+ incorrectly, which makes identifying and removing 3'-end contaminants
  difficult. Fixed-number mismatch approaches to remove contaminants
- can fail in these low quality regions. Failing to remove such
+ perform poorly in these low quality regions. Failing to remove such
  contaminants can seriously confound downstream analyses like assembly
  and mapping.
 
@@ -20,7 +20,7 @@
  contaminants. It searches for 3'-end contaminants and uses a Bayesian
  model that considers individual base qualities to decide whether a
  given match is a contaminant or background sequence. Even for a
- variety of prior contamination rates, Scythe out performs other
+ variety of prior contamination rates, Scythe outperforms other
  adapter removal software tools.
 
 *Availability:* Scythe is freely available under the MIT license at
@@ -140,3 +140,7 @@ Cutadapt (Martin, 2011). Btrim
 Cutadapt has an advantage over Scythe in that it does gapped
 alignments (originally it was developed to trim 454 sequences which
 have homopolymer repeats).
+
+
+\bibliographystyle{plain}
+\bibliography{references}
