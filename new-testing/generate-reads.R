@@ -20,5 +20,6 @@ for (rate in contams) {
     message(outfile)
     ff <- file("reads.fastq", open="r")
     contaminateFASTQEntry(ff, outfile, rate, verbose=FALSE)
+    close(ff)
   }
 }

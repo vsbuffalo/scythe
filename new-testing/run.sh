@@ -1,6 +1,7 @@
 ## run.sh -- run tests
 contam_rates=$(ls simulated-reads/)
 
+mkdir -p scythe/results/0.4/
 ## scythe trimming - multiple priors for 40% contamination
 cfile=simulated-reads/0.4/
 # mkdir -p scythe/results/0.4/
@@ -37,7 +38,7 @@ for error in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19  ## Up to max err
 do
     for rep in 1 2 3 4 5 6 7 8 9 10
     do
-        btrim_mac -v $error -3 -a 0 -P -p ../btrim_adapters.fa -t $cfile/$rep.fastq -o btrim/results/0.4/trimmed-$rep-$error.fastq -v $error -3 > /dev/null
+        btrim_mac -v $error -3 -a 0 -P -p btrim_adapters.fa -t $cfile/$rep.fastq -o btrim/results/0.4/trimmed-$rep-$error.fastq -v $error -3 > /dev/null
         python lib/compare.py -r $cfile/$rep.fastq -t btrim/results/0.4/trimmed-$rep-$error.fastq > btrim/results/0.4/results-$rep-$error.txt \
             2> btrim/results/0.4/compare-offsets-$rep-$error.txt
     done
