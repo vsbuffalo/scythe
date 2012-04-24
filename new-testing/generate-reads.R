@@ -16,7 +16,7 @@ for (rate in contams) {
       dir.create(dir)
     }
     message(sprintf("creating file %d for contamination rate %f.\n", rep, rate))
-    outfile <- file.path(dir, sprintf("%d.fastq", rep))
+    outfile <- file.path(dir, sprintf("%02d.fastq", rep))
     message(outfile)
     ff <- file("reads.fastq", open="r")
     contaminateFASTQEntry(ff, outfile, rate, verbose=FALSE)
