@@ -1,4 +1,5 @@
 ## analysis.R -- read in sequences to analyze trimming results
+## note: assumes POSIX directory delimiter ("/")
 
 library(Biostrings)
 library(ShortRead)
@@ -74,28 +75,54 @@ function(x) {
   return(as.numeric(gsub(".*-contaminated-([0-9]+)", "\\1", x)))
 }
 
-seqWidthDiff <- function(x, y) {
-  width(x) - width(y)
-}
-
 compareFastqTrim <- function(original, trimmed) {
-  original.d <- DataFrame(id=id(original), read=sread(original))
-  trimmed.d <- DataFrame(id=id(trimmed), read=sread(trimmed))
+  original.d <- data.frame(id=as.character(id(original)), read=as.character(sread(original)), stringsAsFactors=FALSE)
+  trimmed.d <- data.frame(id=as.character(id(trimmed)), read=as.character(sread(trimmed)), stringsAsFactors=FALSE)
 
   # full outer join of reads
   x <- merge(original.d, trimmed.d, by='id', all=TRUE)
-  # change types
-  x <- with(x, DataFrame(id=as.character(id),
-                         original.read=DNAStringSet(read.x),
-                         trimmed.read=DNAStringSet(read.y)))
+  colnames(x) <- c("id", "original.read", "trimmed.read")
 
+  x[is.na(x)] <- ""
   # Now, get actual contamination rate per sequence
-  x$contam <- sapply(x$id, extractContam)
+  x$n.contam <- sapply(x$id, extractContam)
 
-  # get width diff
-  x$n.trimmed <- with(x, width(original.read) - width(trimmed.read))
+  # get sequence length difference (due to trimming)
+  x$n.trimmed <- with(x, nchar(original.read) - nchar(trimmed.read))
   x[, -c(2, 3)]
 }
 
 
+## Now compare trimmed reads with original.
+sim.read.files <- list.files(sim.read.dir, recursive=TRUE)
+trimmed.read.files <- local({
+  f <- list.files(trimmers, recursive=TRUE, full.names=TRUE, pattern="trimmed-.*") 
+  tmp <- gsub("([a-z]+)/results/([\\.\\d]+)/trimmed-(\\d+)-([\\.\\d]+)\\.fastq", "\\1;;;\\2;;;\\3;;;\\4",
+              f, perl=TRUE)
+  chunks <- strsplit(tmp, ";;;")
+  x <- do.call(rbind, chunks)
+  data.frame(file=f, trimmer=x[, 1], contam.rate=x[, 2], rep=x[, 3], parameter=x[, 4], stringsAsFactors=FALSE)
+})
 
+
+results <- with(trimmed.read.files,
+                mapply(function(f, trimmer, contam, rep, parameter) {
+                  ## get corresponding simulated reads
+                  sr <- sim.reads[[contam]][[rep]]
+
+                  ## get corresponding trimmed reads
+                  tr <- trimmed.reads[[trimmer]][[contam]][[paste(parameter, rep, sep=";;;;")]]
+                  
+                  out <- compareFastqTrim(sr, tr)
+                  out$trimmer <- trimmer
+                  out$contam <- contam
+                  out$rep <- rep
+                  out$parameter <- parameter
+                  out
+                }, file, trimmer, contam.rate, rep, parameter, SIMPLIFY=FALSE))
+
+d <- do.call(rbind, results)
+
+
+
+### Analysis of results
