@@ -122,7 +122,10 @@ results <- with(trimmed.read.files,
                 }, file, trimmer, contam.rate, rep, parameter, SIMPLIFY=FALSE))
 
 d <- do.call(rbind, results)
-
+save(d, file="read-level-testing-results.Rda")
 
 
 ### Analysis of results
+# Currently the data is at the read-level. We need to summarize the
+# results at the trimmer, contamination, and parameter level.
+d.split <- split(d, list(d$trimmer, d$contam, d$parameter))
