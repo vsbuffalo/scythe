@@ -93,6 +93,13 @@ compareFastqTrim <- function(original, trimmed) {
 }
 
 
+calcStats <- function(x, y) {
+  stopifnot(length(x) == length(y))
+  n <- length(x)
+  cc <- sum(x == y)
+  data.frame(n.correct=cc, n.incorrect=n-cc)
+}
+
 ## Now compare trimmed reads with original.
 sim.read.files <- list.files(sim.read.dir, recursive=TRUE)
 trimmed.read.files <- local({
@@ -113,19 +120,18 @@ results <- with(trimmed.read.files,
                   ## get corresponding trimmed reads
                   tr <- trimmed.reads[[trimmer]][[contam]][[paste(parameter, rep, sep=";;;;")]]
                   
-                  out <- compareFastqTrim(sr, tr)
+                  tmp <- compareFastqTrim(sr, tr)
+                  out <- with(tmp, calcStats(n.trimmed, n.contam))
                   out$trimmer <- trimmer
-                  out$contam <- contam
+                  out$contam.rate <- contam
                   out$rep <- rep
                   out$parameter <- parameter
                   out
                 }, file, trimmer, contam.rate, rep, parameter, SIMPLIFY=FALSE))
 
-d <- do.call(rbind, results)
-save(d, file="read-level-testing-results.Rda")
-
 
 ### Analysis of results
 # Currently the data is at the read-level. We need to summarize the
 # results at the trimmer, contamination, and parameter level.
-d.split <- split(d, list(d$trimmer, d$contam, d$parameter))
+d <- do.call(rbind, results)
+write.table(d, file="testing-results-table.txt", sep="\t", quote=FALSE, row.names=FALSE)
