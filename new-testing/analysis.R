@@ -156,4 +156,5 @@ ds <- aggregate(d[, -remove.cols], list(trimmer=d$trimmer, parameter=d$parameter
 p <- ggplot(ds) + geom_text(aes(x=fpr, y=tpr, color=trimmer, label=parameter), size=5)
 p <- p + scale_y_continuous("true positive rate")
 p <- p + scale_x_continuous("false positive rate")
-p
+p <- p + theme_bw()
+ggsave(file="trimmer-roc-curve.png", plot=p, height=600, width=800)

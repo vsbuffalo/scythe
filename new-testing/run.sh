@@ -33,7 +33,7 @@ for error in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19  ## Up to max err
 do
     for rep in 01 02 03 04 05 06 07 08 09 10
     do
-        btrim_mac -v $error -3 -a 0 -P -p btrim_adapters.fa -t $cfile/$rep.fastq -o btrim/results/0.4/trimmed-$rep-$error.fastq -v $error -3 > /dev/null
+        btrim_mac -v $error -3 -a 0 -P -p btrim_adapters.fa -t $cfile/$rep.fastq -o btrim/results/0.4/trimmed-$rep-$error.fastq > /dev/null
     done
 done
 
