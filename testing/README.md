@@ -14,3 +14,14 @@
 `run.sh` is designed to use the most recent Scythe version; it
 references it in the directory above the testing directory. Other
 trimmers must be in the `$PATH` environmental variable.
+
+### Trimmer Versions
+
+ - btrim, not versioned but the 2011-09-16 version of
+   `btrim_mac` was downloaded from http://graphics.med.yale.edu/trim/.
+ - cutadapt, version 1.0 was tested. This version is dated 2011-11-04
+   and downloaded from
+   http://code.google.com/p/cutadapt/downloads/list.
+ - scythe version 0.981 was used.
+
+

@@ -1,7 +1,7 @@
 ## generate-reads.R -- generate reads with different contamination
 ## rates.
 
-source("lib/read-sim.R")
+source("read-sim.R")
 
 contams <- seq(0, 0.95, 0.05)
 n.reps <- 10

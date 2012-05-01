@@ -1,4 +1,4 @@
-## Contaminated read simulation
+## read-sim.R -- contaminated read simulation using real Illumina qualities
 
 NUCLEOTIDES <- c('A', 'T', 'C', 'G')
 #adapters <- list("solexa_adapter_1"="AGATCGGAAGAGCTCGTATGCCGTCTTCTGCTTG")
@@ -37,7 +37,7 @@ function(length, adapter=NULL, quality=NULL, is.contam=FALSE, min.contam=3) {
   }
 }
 
-contaminateFASTQEntry <- function(con, outfile, rate, adapters, min.contam=3) {
+contaminateFASTQEntry <- function(con, outfile, rate, min.contam=3, verbose=FALSE) {
   blocks.processed <- 0
   reads <- readLines(con)
   outlist <- vector('character', length(reads))
@@ -64,9 +64,11 @@ contaminateFASTQEntry <- function(con, outfile, rate, adapters, min.contam=3) {
     outlist[4*blocks.processed+4] <- quality
 
     blocks.processed <- blocks.processed + 1
-    if (blocks.processed %% 100 == 0)
+    if (blocks.processed %% 100 == 0 && verbose)
       message(sprintf("%d blocks processed.", blocks.processed))
   }
-  writeLines(outlist, con=file(outfile))
+  of <- file(outfile)
+  writeLines(outlist, con=of)
+  close(of)
 }
 
