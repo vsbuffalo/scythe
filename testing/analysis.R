@@ -100,7 +100,8 @@ calcStats <- function(n.trimmed, n.contam) {
   true.positives <- sum(n.trimmed == n.contam & n.contam > 0)
   true.negatives <- sum(n.trimmed == n.contam & n.contam == 0)
   false.negatives <- sum(n.trimmed == 0 & n.contam > 0)
-  data.frame(false.positives, true.positives,
+  incorrectly.trimmed <- sum(n.trimmed > 0 & n.contam > 0 & n.contam != n.trimmed)
+  data.frame(false.positives, true.positives, incorrectly.trimmed,
              false.negatives, true.negatives, total=n)
 }
 
