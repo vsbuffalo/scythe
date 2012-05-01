@@ -157,8 +157,23 @@ stop()
 ## summarized d; take mean across replicates. 
 remove.cols <- which(colnames(d) %in% c("trimmer", "parameter", "rep", "contam.rate", "total"))
 ds <- aggregate(d[, -remove.cols], list(trimmer=d$trimmer, parameter=d$parameter, contam.rate=d$contam.rate), mean)
-p <- ggplot(ds) + geom_text(aes(x=fpr, y=tpr, color=trimmer, label=parameter), size=5)
+stopifnot(length(unique(d$total)) == 1)
+ds$total <- unique(d$total)
+p <- ggplot(ds) + geom_text(aes(x=fpr, y=tpr, color=trimmer, label=parameter), size=3)
 p <- p + scale_y_continuous("true positive rate")
 p <- p + scale_x_continuous("false positive rate")
-p <- p + theme_bw()
-ggsave(file="trimmer-roc-curve.png", plot=p, height=600, width=800)
+p <- p + theme_bw() + facet_wrap(~ contam.rate)
+#ggsave(file="trimmer-roc-curve.png", plot=p, height=600, width=800)
+
+## look at incorrect trimmed
+ds$width <- ifelse(ds$trimmer == 'btrim', 0.8, 0.04)
+q <- ggplot(ds, aes(x=parameter, y=incorrectly.trimmed/total, width=width)) + geom_bar(stat="identity")
+q <- q+ facet_wrap(~ trimmer, scales="free_x")
+
+
+vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(2, 1)))
+print(p, vp = vplayout(2, 1))
+print(q, vp = vplayout(1, 1))
+#ggsave(file="trimmer=")
