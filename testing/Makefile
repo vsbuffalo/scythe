@@ -3,10 +3,12 @@ clean:
 	rm -rf cutadapt/results/*
 	rm -rf btrim/results/*
 
-clean-sim-reads:
+clean-simulated-reads:
 	rm -rf simulated-reads/*
 
-gen-reads:
+run-trimmers:
 	bash run.sh 0.4
 	bash run.sh 0.7
 
+generate-reads:
+	R CMD BATCH generate-reads.R
