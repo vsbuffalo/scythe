@@ -12,7 +12,7 @@ library(ShortRead)
 ### Settings
 # Currently, we're using simulated reads with a contamination rate of
 # 40%
-sim.contam.rate <- 0.4
+sim.contam.rate <- c(0.4, 0.7)
 
 # Here are the trimmer we are testing; the names refer to the output
 # directories of these trimmers
@@ -138,21 +138,24 @@ results <- with(trimmed.read.files,
 # Currently the data is at the read-level. We need to summarize the
 # results at the trimmer, contamination, and parameter level.
 d <- do.call(rbind, results)
-write.table(d, file="testing-results-table.txt", sep="\t", quote=FALSE, row.names=FALSE)
 
-addRates <- function(x) 
+
+addRates <- 
 # add FP and TP rates for generating ROC curves
-{
+function(x) {
   x$tpr <- with(x, true.positives/(true.positives + false.negatives))
   x$fpr <- with(x, false.positives/(false.positives + true.negatives))
   x
 }
 
 d <- addRates(d)
+write.table(d, file="testing-results-table.txt", sep="\t", quote=FALSE, row.names=FALSE)
 
-## summarized d; take mean across replicates. We remove
+stop()
+
+## summarized d; take mean across replicates. 
 remove.cols <- which(colnames(d) %in% c("trimmer", "parameter", "rep", "contam.rate", "total"))
-ds <- aggregate(d[, -remove.cols], list(trimmer=d$trimmer, parameter=d$parameter), mean)
+ds <- aggregate(d[, -remove.cols], list(trimmer=d$trimmer, parameter=d$parameter, contam.rate=d$contam.rate), mean)
 p <- ggplot(ds) + geom_text(aes(x=fpr, y=tpr, color=trimmer, label=parameter), size=5)
 p <- p + scale_y_continuous("true positive rate")
 p <- p + scale_x_continuous("false positive rate")
