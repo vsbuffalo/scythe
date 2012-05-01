@@ -17,8 +17,10 @@ trimmers must be in the `$PATH` environmental variable.
 
 ### Trimmer Versions
 
- - btrim, not versioned but the 2011-09-16 version of
-   `btrim_mac` was downloaded from http://graphics.med.yale.edu/trim/.
+ - btrim, not versioned but the 2011-09-16 version of `btrim_mac` was
+   downloaded from http://graphics.med.yale.edu/trim/.  The Linux
+   version `btrim32` is also not versioned, but the 2011-02-31 version
+   was used.
  - cutadapt, version 1.0 was tested. This version is dated 2011-11-04
    and downloaded from
    http://code.google.com/p/cutadapt/downloads/list.
