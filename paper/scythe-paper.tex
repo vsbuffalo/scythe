@@ -140,30 +140,65 @@ page works well as an initial guess for the prior.
 
 
 \section{Results}
-Scythe was tested against two similar program: Btrim (Kong, 2011) and
-Cutadapt (Martin, 2011). Btrim
+Scythe was tested against two similar program: Btrim
+\cite{pmid21651976} and Cutadapt \cite{pmid19737799}. Both Btrim and
+Cutadapt have the advantage over Scythe in that they can handle
+insertions/deletions. Both also include quality trimmers, which
+intentionally does not. 
 
-Cutadapt has an advantage over Scythe in that it does gapped
-alignments (originally it was developed to trim 454 sequences which
-have homopolymer repeats).
+To test Scythe, Btrim, and Cutadapt at 3' adapter contaminant removal,
+random reads were generated and contaminated at fixed contamination
+rates of 40\% and 70\%. FASTQ qualities from a Illumina Genome
+Analyzer II run were added to these read sequences. Real base
+qualities were used because properly modeling and simulating 3'-end
+quality degradation is an arduous task. For the two fixed
+contamination rates, ten replicate FASTQ files were generated randomly
+to ensure contaminated and non-contaminated reads were well dispersed
+across different read qualities. Each simulated FASTQ reads file
+contains 10,000 entries.
+
+Each program was run with varying parameters to see how true positive
+and false positive rates change. Btrim uses a fixed number of
+mismatches, so integer values from 0 to 10 were used. Cutadapt uses an
+error rate for a matched sequence, which was varied from 0 to 0.95 in
+0.05 increments. Likewise, Scythe also uses the same values for its
+prior parameter. Each piece of software was run with all other options
+off to ensure a fair comparison of 3'-end contaminant removal.
+
+While Cutadapt and Scythe only trim files, Btrim occasionally removes
+an read entirely from the sample. For comparison purposes, we count
+this as trimming the entire length of a read. We compared the length
+of the original simulated read to the trimmed read for all programs,
+parameters, replicates, and contamination rates. This, combined with
+information about whether a read was contaminated or not allows the
+calculation of true positive and false positive rates. Also, we
+investigate how many times Btrim, Cutadapt, and Scythe incorrectly
+trim a read, e.g. whether the trimmed length is not equal to the
+contaminate length for reads that were contaminated.
+
+In these tests, we find that Scythe outperforms Btrim and Cutadapt in
+terms of true positive rates for a variety of false positive rates
+(see figure) across a variety of parameters. Furthermore, Scythe also
+has fewer incorrectly trimmed reads across a variety of parameters
+compared to Btrim and Cutadapt. We suspect this superior performance
+is due to Scythe's (1) consideration of base-level qualities and (2)
+Scythe's use of Bayesian model rather than a simple fixed-number of
+mismatches or fixed-error approach.
+
 \end{methods}
 
-\section{Discussion}
-
 \section{Conclusion}
-
 
 \section*{Acknowledgement}
 
 \paragraph{Funding\textcolon} None.
 
-\bibliographystyle{natbib}
-\bibliographystyle{achemnat}
-\bibliographystyle{plainnat}
-\bibliographystyle{abbrv}
-\bibliographystyle{bioinformatics}
 
-\bibliographystyle{plain}
+\bibliographystyle{natbib}
+% \bibliographystyle{achemnat}
+% \bibliographystyle{plainnat}
+% \bibliographystyle{abbrv}
+% \bibliographystyle{bioinformatics}
 
 \bibliography{references}
 
