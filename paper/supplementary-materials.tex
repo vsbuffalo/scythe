@@ -54,12 +54,20 @@ Buffalo) with positive results. Sickle is available on Github at
 \section{Calculation of True Positives, False Positives, and
   Incorrectly Trimmed Reads}
 
-We calculate a true positive as a read that's been trimmed when it was
-contaminated. However, this doesn't consider the length trimmed and
-whether it matches the length of the contaminant. To assess incorrect
-trimming rates, we calculate the number of reads that were
-contaminated and trimmed, and where the length of the contaminant
-doesn't match the trimmed length.
+To assess incorrect trimming rates, we calculate the number of reads
+that were contaminated and trimmed, and where the length of the
+contaminant doesn't match the trimmed length.
+
+\section{Specifying Scythe's Prior}
+
+The prior doesn't need to be estimated increadibly well; one technique
+that works well is to view the FASTQ file in the Unix command line
+tool \texttt{less} and search for the 3'-end bases of the adapter
+contaminant. The number of results on a page of less output divided by
+the number of FASTQ entries on that page works well as an initial
+guess for the prior.
+
+
 
 \bibliographystyle{natbib}
 \bibliography{references}

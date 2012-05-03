@@ -21,11 +21,7 @@
 Modern sequencing technologies can leave artifactual contaminant
 sequences at the 3'-end of reads. 3'-end regions also have the lowest
 quality bases that are likely to be called incorrectly, which makes
-identifying and removing 3'-end contaminants difficult. Fixed-number
-of mismatch approaches to remove contaminants perform poorly in these
-low quality regions. Failing to remove such contaminants can seriously
-confound downstream analyses like assembly and mapping, so a special
-tool is needed to remove such contaminants.
+identifying and removing 3'-end contaminants difficult. 
 
 \section{Results:} 
 Scythe is a program designed specifically to remove 3'-end
@@ -43,9 +39,9 @@ Scythe is freely available under the MIT license at
 \end{abstract}
 
 \section{Introduction}
-Scythe focuses on 3'-end contaminants, specifically those due to
-adapters or barcodes. It embraces the Unix Philosophy of ``programs
-that do one thing well'' (\citealp{raymond2003}). Many
+Scythe is focused on trimming 3'-end contaminants, specifically those
+due to adapters or barcodes. It embraces the Unix Philosophy of
+``programs that do one thing well'' (\citealp{raymond2003}). Many
 second-generation sequencing technologies such as Illumina's Genome
 Analyzer II and HiSeq have lower-quality 3'-end bases. These
 low-quality bases are more likely to have nucleotides called
@@ -53,38 +49,42 @@ incorrectly, making contaminant identification more
 difficult. Futhermore, 3'-end quality deterioration is not uniform
 across all reads (see Fig. 1 in Supplementary Materials).
 
-A common step in read quality improvement procedures is to remove
-these low-quality 3'-end sequences from reads. This is thought to
-increase mapping rates and improve assembly quality. However doing
-quality-based 3'-end trimming before contaminant removal would remove
-sequence that could be used (despite being unreliable) to identify the
-contaminants more accurately. Scythe takes the approach that it is
-better to use full information, even if it's unreliable. How
-unreliable a base is is indicated by the FASTQ quality score, which
-can be incorporated into Scythe's classification procedure.
+By using a Bayesian classification procedure, Scythe accurately trims
+3'-end contaminants off reads. The underlying model differentially
+weights mismatching bases according to their FASTQ quality.
 
-Fixed-number of mismatch approaches have the disadvantage that they
-do not differentially weight a mismatch on a low-quality base from a
-mismatch on a high-quality base. Futhermore, the fixed-number could
-easily be exhausted in a run of bad bases (which are quite common in
-the 3'-end), even though every good-quality base perfectly matches the
-contaminant sequence.
+% A common step in read quality improvement procedures is to remove
+% these low-quality 3'-end sequences from reads. This is thought to
+% increase mapping rates and improve assembly quality. However doing
+% quality-based 3'-end trimming before contaminant removal would remove
+% sequence that could be used (despite being unreliable) to identify the
+% contaminants more accurately. Scythe takes the approach that it is
+% better to use full information, even if it's unreliable. How
+% unreliable a base is is indicated by the FASTQ quality score, which
+% can be incorporated into Scythe's classification procedure.
+
+% Fixed-number of mismatch approaches have the disadvantage that they
+% do not differentially weight a mismatch on a low-quality base from a
+% mismatch on a high-quality base. Futhermore, the fixed-number could
+% easily be exhausted in a run of bad bases (which are quite common in
+% the 3'-end), even though every good-quality base perfectly matches the
+% contaminant sequence.
 
 
 \begin{methods}
 \section{String Matching in Scythe}
 
-Scythe is only focused on 3'-end contaminants, so it employs a simple
-string matching heuristic to find a best match. Scythe scores each
-alignment of the contaminant sequence against the read sequence,
-starting from the entire contaminant in the 3'-end to incrementally
-fewer bases. A minimum match length can be specified via a parameter
-(by default, 5). Each of these alignments is scored using a 1 for
-mismatch, -1 for mismatch approach. The top scoring alignment is then
-passed to the probabilistic classification procedure, which decides
-whether the match is background sequence of a contaminant. The time
-complexity of Scythe's matching algorithm for a single adapter of
-length $l_a$ is $O(l_a^2 R)$ for a FASTQ file with $R$ entries.
+Scythe employs a simple string matching heuristic to find a best
+match. Scythe scores each alignment of the contaminant sequence
+against the read sequence, starting from the entire contaminant in the
+3'-end to incrementally fewer bases. A minimum match length can be
+specified via a parameter (by default, 5). Each of these alignments is
+scored using a 1 for mismatch, -1 for mismatch approach. The top
+scoring alignment is then passed to the probabilistic classification
+procedure, which decides whether the match is background sequence of a
+contaminant. The time complexity of Scythe's matching algorithm for a
+single adapter of length $l_a$ is $O(l_a^2 R)$ for a FASTQ file with
+$R$ entries.
 
 
 \section{Bayesian Classification of Top-Scoring Matches}
@@ -117,24 +117,16 @@ the probability of contamination given then top-scoring match:
 
 $$ P(C|S) = \frac{P(C) P(S|C)}{P(S)} $$
 
-Where the denominator can be replaced with $P(S) = P(S | C)P(C) + P(S
-| C') P(C')$ by the Law of Total Probability. $P(C'|S)$ is calculated
-similarly. Since these are mutually exclusive and exhaustive events,
-the \emph{maximum a posteriori} rule can be used to classify a
-top-scoring sequence as either contaminated or non-contaminated
-(e.g. if $P(C'|S) > P(C|S)$, the sequence is not contaminated and
-visa-versa).
+Since these are mutually exclusive and exhaustive events, the
+\emph{maximum a posteriori} rule can be used to classify a top-scoring
+sequence as either contaminated or non-contaminated (e.g. if $P(C'|S)
+> P(C|S)$, the sequence is not contaminated and visa-versa).
 
 Required in this Bayesian formulation is the prior of contamination,
 $P(C)$. Specifying the prior may seem like a nuisance, but it is a
 useful parameter that can be adjusted for a variety of different
-contamination scenarios. The prior doesn't need to be estimated
-increadibly well; one technique that works well is to view the FASTQ
-file in the Unix command line tool \texttt{less} and search for the
-3'-end bases of the adapter contaminant. The number of results on a
-page of less output divided by the number of FASTQ entries on that
-page works well as an initial guess for the prior.
-
+contamination scenarios. More information on specifying a parameter is
+in Supplementary Materials.
 
 \section{Results}
 \begin{centering}
@@ -200,11 +192,6 @@ parameters in the ROC curve (Fig. \ref{fig:02}). Furthermore, we argue
 that Scythe's parameter is easier to intuitively choose than a
 sequence error rate.
 
-We suspect Scythe's superior performance is due to its (1)
-consideration of base-level qualities and (2) Scythe's use of Bayesian
-model rather than a simple fixed-number of mismatches or fixed-error
-approach.
-
 \end{methods}
 
 \section{Conclusion}
@@ -216,12 +203,18 @@ other read processing tools and diagnostics between each step. We
 suggest that Scythe be used for all Illumina read processing
 pipelines.
 
+We suspect Scythe's superior performance is due to its (1)
+consideration of base-level qualities and (2) Scythe's use of Bayesian
+model rather than a simple fixed-number of mismatches or fixed-error
+approach.
+
 
 \section*{Acknowledgement}
 Monica Britton and Nikhil Joshi for helpful feedback about bugs in
-Scythe. 
+Scythe. Xiran Dong was very helpful in early testing of Scythe against
+other trimmers.
 
-\paragraph{Funding\textcolon} None.
+%\paragraph{Funding\textcolon} None.
 
 
 \bibliographystyle{natbib}
