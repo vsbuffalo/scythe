@@ -172,7 +172,7 @@ p <- p + opts(title="ROC Curve")
 ## look at incorrect trimmed
 ds$width <- ifelse(ds$trimmer == 'btrim', 0.8, 0.04)
 q <- ggplot(ds, aes(x=parameter, y=incorrectly.trimmed/total, width=width)) + geom_bar(stat="identity")
-q <- q + scale_y_continuous("proportion\nincorrectly trimmed")
+q <- q + scale_y_continuous("proportion\nincorrectly\ntrimmed")
 q <- q + facet_wrap(~ trimmer, scales="free_x") + theme_bw(base_size=bs)
 q <- q + opts(title="Incorrectly Trimmed Reads by Trimmer and Parameter")
 

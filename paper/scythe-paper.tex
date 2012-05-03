@@ -51,20 +51,20 @@ Analyzer II and HiSeq have lower-quality 3'-end bases. These
 low-quality bases are more likely to have nucleotides called
 incorrectly, making contaminant identification more
 difficult. Futhermore, 3'-end quality deterioration is not uniform
-across all reads (see figure 1 in Supplementary Materials).
+across all reads (see Fig. 1 in Supplementary Materials).
 
 A common step in read quality improvement procedures is to remove
 these low-quality 3'-end sequences from reads. This is thought to
 increase mapping rates and improve assembly quality. However doing
 quality-based 3'-end trimming before contaminant removal would remove
 sequence that could be used (despite being unreliable) to identify the
-contaminants more positively. Scythe takes the approach that it is
+contaminants more accurately. Scythe takes the approach that it is
 better to use full information, even if it's unreliable. How
 unreliable a base is is indicated by the FASTQ quality score, which
-can be incorporated into classification procedures.
+can be incorporated into Scythe's classification procedure.
 
 Fixed-number of mismatch approaches have the disadvantage that they
-don't differentially weight a mismatch on a low-quality base from a
+do not differentially weight a mismatch on a low-quality base from a
 mismatch on a high-quality base. Futhermore, the fixed-number could
 easily be exhausted in a run of bad bases (which are quite common in
 the 3'-end), even though every good-quality base perfectly matches the
@@ -117,13 +117,13 @@ the probability of contamination given then top-scoring match:
 
 $$ P(C|S) = \frac{P(C) P(S|C)}{P(S)} $$
 
-Where the denominator can be replaced with $P(S) = P(S | C)P(C) +
-P(S | C') P(C')$ by the Law of Total Probability. $P(C'|S)$ is
-calculated similarly. Since these are mutually exclusive and
-exhaustive events, the /maximum a posteriori/ rule can be used to
-classify a top-scoring sequence as either contaminated or
-non-contaminated (e.g. if $P(C'|S) > P(C|S)$, the sequence is not
-contaminated and visa-versa).
+Where the denominator can be replaced with $P(S) = P(S | C)P(C) + P(S
+| C') P(C')$ by the Law of Total Probability. $P(C'|S)$ is calculated
+similarly. Since these are mutually exclusive and exhaustive events,
+the \emph{maximum a posteriori} rule can be used to classify a
+top-scoring sequence as either contaminated or non-contaminated
+(e.g. if $P(C'|S) > P(C|S)$, the sequence is not contaminated and
+visa-versa).
 
 Required in this Bayesian formulation is the prior of contamination,
 $P(C)$. Specifying the prior may seem like a nuisance, but it is a
@@ -147,7 +147,7 @@ page works well as an initial guess for the prior.
 \end{centering}
 
 Scythe was tested against two similar program: Btrim
-(\citealp{pmid21651976}) and Cutadapt (\citealp{pmid19737799}). Both
+(\citealp{pmid21651976}) and Cutadapt (\citealp{EJ200}). Both
 Btrim and Cutadapt can handle insertions/deletions, but in Illumina
 data we've analzed, no indels in adapter contaminants were
 witnessed. This problem is more associated with 454 reads, which can
@@ -173,12 +173,12 @@ error rate for a matched sequence, which was varied from 0 to 0.95 in
 prior parameter. Each piece of software was run with all other options
 off to ensure a fair comparison of 3'-end contaminant removal.
 
-While Cutadapt and Scythe only trim files, Btrim occasionally removes
-an read entirely from the sample. For comparison purposes, we count
+While Cutadapt and Scythe only trims reads, Btrim occasionally removes
+a read entirely from the sample. For comparison purposes, we count
 this as trimming the entire length of a read. We compared the length
 of the original simulated read to the trimmed read for all programs,
 parameters, replicates, and contamination rates. This, combined with
-information about whether a read was contaminated or not allows the
+information about whether a read was contaminated allows the
 calculation of true positive and false positive rates. Also, we
 investigate how many times Btrim, Cutadapt, and Scythe incorrectly
 trim a read, e.g. whether the trimmed length is not equal to the
@@ -188,15 +188,17 @@ In these tests, we find that Scythe outperforms Btrim and Cutadapt in
 terms of true positive rates for a variety of false positive rates
 across a variety of parameters (see Fig. \ref{fig:02}). Furthermore,
 Scythe also has fewer incorrectly trimmed reads across a variety of
-parameters compared to Btrim and Cutadapt. Note that Cutadapt performs
-well too, but is very sensitive its error parameter. Changing
-Cutadapt's error parameter from 35\% to 40\% slightly increases the
-true positive rate, but drastically increases the false positive
-rate. By contrast, Scythe's probabilistic approach is much less
-sensitive to different prior parameters, illustrated by the
-overplotting of the 35\% to 95\% prior parameters in the ROC curve
-(Fig. \ref{fig:02}). Furthermore, we argue that Scythe's parameter is
-easier to intuitively choose than an sequence error rate.
+parameters compared to Btrim and Cutadapt. Differences in
+contamination rates (40\% and 70\%) do not adversely affect Scythe's
+performance. Note that Cutadapt performs well too, but is very
+sensitive to its error parameter. Changing Cutadapt's error parameter
+from 35\% to 40\% slightly increases the true positive rate, but
+drastically increases the false positive rate. By contrast, Scythe's
+probabilistic approach is much less sensitive to different prior
+parameters, illustrated by the overplotting of the 35\% to 95\% prior
+parameters in the ROC curve (Fig. \ref{fig:02}). Furthermore, we argue
+that Scythe's parameter is easier to intuitively choose than a
+sequence error rate.
 
 We suspect Scythe's superior performance is due to its (1)
 consideration of base-level qualities and (2) Scythe's use of Bayesian
@@ -206,6 +208,14 @@ approach.
 \end{methods}
 
 \section{Conclusion}
+
+When compared to Btrim and Cutadapt, Scythe is a very accurate 3'-end
+contaminant trimmer appropriate for a variety of pre-analysis quality
+pipelines. It is a modular and orthogonal program, allowing use with
+other read processing tools and diagnostics between each step. We
+suggest that Scythe be used for all Illumina read processing
+pipelines.
+
 
 \section*{Acknowledgement}
 Monica Britton and Nikhil Joshi for helpful feedback about bugs in

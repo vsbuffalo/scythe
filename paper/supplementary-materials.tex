@@ -51,6 +51,16 @@ window quality trimmer Sickle (written by Nikhil Joshi and Vince
 Buffalo) with positive results. Sickle is available on Github at
 \href{http://github.com/najoshi/sickle}{http://github.com/najoshi/sickle}.
 
+\section{Calculation of True Positives, False Positives, and
+  Incorrectly Trimmed Reads}
+
+We calculate a true positive as a read that's been trimmed when it was
+contaminated. However, this doesn't consider the length trimmed and
+whether it matches the length of the contaminant. To assess incorrect
+trimming rates, we calculate the number of reads that were
+contaminated and trimmed, and where the length of the contaminant
+doesn't match the trimmed length.
+
 \bibliographystyle{natbib}
 \bibliography{references}
 
