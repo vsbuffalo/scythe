@@ -166,7 +166,7 @@ p <- ggplot(ds) + geom_text(aes(x=fpr, y=tpr, color=trimmer, label=parameter), s
 p <- p + scale_y_continuous("true positive rate")
 p <- p + scale_x_continuous("false positive rate")
 p <- p + theme_bw(base_size=bs) + facet_wrap(~ contam.rate)
-p <- p + opts(title="ROC Curve")
+p <- p + opts(title="(a) ROC Curve for Btrim, Cutadapt, and Scythe Across\n40% and 70% Read Contamination Rates")
 #ggsave(file="trimmer-roc-curve.png", plot=p, height=600, width=800)
 
 ## look at incorrect trimmed
@@ -174,7 +174,7 @@ ds$width <- ifelse(ds$trimmer == 'btrim', 0.8, 0.04)
 q <- ggplot(ds, aes(x=parameter, y=incorrectly.trimmed/total, width=width)) + geom_bar(stat="identity")
 q <- q + scale_y_continuous("proportion\nincorrectly\ntrimmed")
 q <- q + facet_wrap(~ trimmer, scales="free_x") + theme_bw(base_size=bs)
-q <- q + opts(title="Incorrectly Trimmed Reads by Trimmer and Parameter")
+q <- q + opts(title="(b) Incorrectly Trimmed Reads by Trimmer and Parameter")
 
 vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
 
