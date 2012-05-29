@@ -14,7 +14,10 @@
 
 #define MIN(a,b) ((a)>(b)?(b):(a))
 
-KSEQ_INIT(gzFile, gzread)
+__KS_GETC(gzread, BUFFER_SIZE)
+__KS_GETUNTIL(gzread, BUFFER_SIZE)
+__KSEQ_READ
+
 
 void *xmalloc(size_t size) {
   void *ret = malloc(size);
@@ -37,31 +40,28 @@ adapter_array *load_adapters(gzFile fp) {
      null byte, so these have to be taken into account.
   */
   while ((seq_l = kseq_read(aseq)) >= 0) {
+    if (!aseq->seq.l || !aseq->name.l) {
+      fprintf(stderr, "Blank FASTA header or sequence in adapters file.\n");
+      exit(EXIT_FAILURE);
+    }
+
     adapters[i].seq = (char *) xmalloc(seq_l*sizeof(char) + 1);
     strncpy(adapters[i].seq, aseq->seq.s, seq_l);
     header_l = aseq->name.l + aseq->comment.l + 1;
     adapters[i].name = (char *) xmalloc(header_l*sizeof(char) + 1);
     strncpy(adapters[i].name, aseq->name.s, aseq->name.l+1);
-    strncat(adapters[i].name, " ", 1);
-    strncat(adapters[i].name, aseq->comment.s, aseq->comment.l+1);
+
+    if (aseq->comment.s) {
+      strncat(adapters[i].name, " ", 1);
+      strncat(adapters[i].name, aseq->comment.s, aseq->comment.l+1);
+    }
+
     adapters[i].length = seq_l;
     
     /* occurences - for recording where adapters are found */
     adapters[i].occurrences = xmalloc(seq_l*sizeof(unsigned int));
     for (j=0; j < seq_l; j++)
       adapters[i].occurrences[j] = 0;
-
-    /* detect end of adapter (either 5' or 3') */
-    if (strstr(adapters[i].name, "3'")) {
-      adapters[i].end = THREE_PRIME;
-    } else {
-      if (strstr(adapters[i].name, "5'"))
-        adapters[i].end = FIVE_PRIME;
-      else {
-        fprintf(stderr, "Adapter file contains adapter without 5' or 3' in header");
-        exit(EXIT_FAILURE);
-        }
-    }
     i++;
   }
 
@@ -115,9 +115,21 @@ void print_float_array(const float *array, int n) {
     if (i != n-1)
       printf("%f, ", array[i]);
     else
-    printf("%f]", array[i]);
+      printf("%f]", array[i]);
   }
 }
+
+void fprint_float_array(FILE *fp, const float *array, int n) {
+  int i;
+  fprintf(fp, "[");
+  for (i = 0; i < n; i++) {
+    if (i != n-1)
+      fprintf(fp, "%.3f, ", array[i]);
+    else
+      fprintf(fp, "%.3f]", array[i]);
+  }
+}
+
 
 void print_int_array(const int *array, int n) {
   int i;
@@ -126,7 +138,7 @@ void print_int_array(const int *array, int n) {
     if (i != n-1)
       printf("%d, ", array[i]);
     else
-    printf("%d]", array[i]);
+      printf("%d]", array[i]);
   }
 }
 
@@ -142,10 +154,68 @@ void print_uint_array(const unsigned int *array, int n) {
   }
 }
 
+void fprint_uint_array(FILE *fp, const unsigned int *array, int n) {
+  int i;
+  fprintf(fp, "[");
+  for (i = 0; i < n; i++) {
+    if (i != n-1)
+      fprintf(fp, "%d, ", array[i]);
+    else
+      fprintf(fp, "%d]", array[i]);
+  }
+}
+
 int sum(const int *x, int n) {
   int i;
   int s = 0;
   for (i = 0; i < n; i++)
     s += x[i];
   return s;
+}
+
+void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, char *tag, int match_n) {
+  /* Heng Li's kseq.h handles FASTQ headers as such: anything after
+     the first space is put in the field "comment" of the kseq_t
+     struct. This function writes a single FASTQ block and wraps
+     simple fprintf such that we don't have to worry about whether
+     there's a comment or not. This has a variety of arguments for
+     different output options,
+  */
+  if (match_n > 0) {
+    /* If match_n is the number of matches we have to trim by, so
+       output trimmed FASTQ seq (and possible header if add_tag is
+       true. */
+    if (add_tag) {
+      if (seq->comment.s)
+        fprintf(output_fp, 
+                "@%s %s%s-%d\n%.*s\n+%s %s%s-%d\n%.*s\n", seq->name.s, seq->comment.s, tag, match_n, 
+                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, seq->comment.s, tag, match_n, 
+                (int) seq->seq.l-match_n, seq->qual.s);
+      else 
+        fprintf(output_fp, 
+                "@%s%s-%d\n%.*s\n+%s%s-%d\n%.*s\n", seq->name.s, tag, match_n, 
+                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, tag, match_n, 
+                (int) seq->seq.l-match_n, seq->qual.s);
+
+    } else {
+      if (seq->comment.s)
+        fprintf(output_fp, 
+                "@%s %s\n%.*s\n+%s %s\n%.*s\n", seq->name.s, seq->comment.s,
+                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, seq->comment.s,
+                (int) seq->seq.l-match_n, seq->qual.s);
+      else
+        fprintf(output_fp, 
+                "@%s\n%.*s\n+%s\n%.*s\n", seq->name.s,
+                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s,
+                (int) seq->seq.l-match_n, seq->qual.s);
+
+    }
+  } else { 
+    if (seq->comment.s)
+      fprintf(output_fp, 
+              "@%s %s\n%s\n+%s %s\n%s\n", seq->name.s, seq->comment.s, seq->seq.s, seq->name.s, seq->comment.s, seq->qual.s);
+  else
+      fprintf(output_fp, 
+              "@%s\n%s\n+%s\n%s\n", seq->name.s, seq->seq.s, seq->name.s, seq->qual.s);
+  }
 }

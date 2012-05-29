@@ -2,15 +2,35 @@
 #define SCYTHE_H
 
 #include <zlib.h>
+#include "kseq.h"
 
+/* KSEQ_INIT() cannot be called here, because we only need the types
+   defined. Calling KSEQ_INIT() would also define functions, leading
+   to an unused function warning with GCC. So, the basic typedefs
+   kseq.h has are included here, and each file that reads needs:
+   
+   This was a fix also used in Nik Joshi's Sickle (which I also helped
+   with) and is the only way I know of dealing with this.
 
-#define MAX_ADAPTERS 20
+   __KS_GETC(gzread, BUFFER_SIZE)
+   __KS_GETUNTIL(gzread, BUFFER_SIZE)
+   __KSEQ_READ
+*/
+
+#define BUFFER_SIZE 4096
+__KS_TYPE(gzFile)
+__KS_BASIC(gzFile, BUFFER_SIZE)
+__KSEQ_TYPE(gzFile)
+__KSEQ_BASIC(gzFile)
+
+#define MAX_ADAPTERS 1000
 #define MATCH_SCORE 1
 #define MISMATCH_SCORE -1
 
 #define IS_FASTQ(quality_type) INTEGER(quality_type)[0] >= 0
 
 typedef enum {
+  PHRED, 
   SANGER,
   SOLEXA,
   ILLUMINA
@@ -20,23 +40,21 @@ typedef enum {
 #define Q_MIN 1
 #define Q_MAX 2
 
-static const int quality_contants[3][3] = {
-  /* offset, min, max */
-  {33, 0, 93}, /* SANGER */
-  {64, -5, 62}, /* SOLEXA */
-  {64, 0, 62} /* ILLUMINA */
-};
+/* The quality constants come from:
+   http://www.biopython.org/DIST/docs/api/Bio.SeqIO.QualityIO-module.html*/
 
-enum sequence_ends {
-  FIVE_PRIME=5,
-  THREE_PRIME=3
+static const int quality_contants[4][3] = {
+  /* offset, min, max */
+  {0, 4, 60}, /* PHRED */
+  {33, 0, 93}, /* SANGER */
+  {64, -5, 62}, /* SOLEXA, early Illumina (pre-pipeline 1.3) */
+  {64, 0, 62} /* ILLUMINA (post-pipeline 1.3) */
 };
 
 typedef struct adapter {
   char *name;
   char *seq;
   int length;
-  enum sequence_ends end;
   unsigned int *occurrences;
 } adapter;
 
@@ -83,9 +101,12 @@ adapter_array *load_adapters(gzFile fp);
 void destroy_adapters(adapter_array *aa, int n);
 char *fmt_matches(const char *seqa, const char *seqb, const int *matches, const int n);
 void print_float_array(const float *array, int n);
+void fprint_float_array(FILE *fp, const float *array, int n);
 void print_int_array(const int *array, int n);
 void print_uint_array(const unsigned int *array, int n);
+void fprint_uint_array(FILE *fp, const unsigned int *array, int n);
 int sum(const int *x, int n);
+void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, char *tag, int match_n);
 
 /* match.c prototypes */
 int *score_sequence(const char *seqa, const char *seqb, int n);

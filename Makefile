@@ -1,5 +1,5 @@
 PROGRAM_NAME = scythe
-VERSION = 0.95
+VERSION = 0.981
 CC = gcc
 CFLAGS = -Wall -pedantic -DVERSION=$(VERSION) -std=gnu99
 DEBUG = -g
@@ -45,4 +45,4 @@ build: match.o scythe.o util.o prob.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $? -o scythe
 
 debug:
-	$(MAKE) build "CFLAGS=-Wall -pedantic -g -DDEBUG"
+	$(CC) $(LDFLAGS) $(DEBUG) -o scythe src/*.c

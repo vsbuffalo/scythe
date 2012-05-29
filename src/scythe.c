@@ -14,7 +14,10 @@
 #include "scythe.h"
 #include "kseq.h"
 
-KSEQ_INIT(gzFile, gzread)
+__KS_GETC(gzread, BUFFER_SIZE)
+__KS_GETUNTIL(gzread, BUFFER_SIZE)
+__KSEQ_READ
+
 static const float default_prior = 0.05;
 
 #ifndef PROGRAM_NAME
@@ -46,13 +49,13 @@ enum {
     break;
 #define case_GETOPT_VERSION_CHAR(Program_name, Version, Authors)        \
   case GETOPT_VERSION_CHAR:                                             \
-    fprintf(stdout, "%s version %0.3f\nCopyright (c) 2011 The Regents " \
-                    "of University of California, Davis Campus.\n"      \
-                    "%s is free software and comes with ABSOLUTELY NO WARRANTY.\n"\
-                    "Distributed under the MIT License.\n\nWritten by %s\n", \
-                     Program_name, Version, Program_name, Authors);     \
-    exit(EXIT_SUCCESS);                                                \
-    break;
+  fprintf(stdout, "%s version %0.3f\nCopyright (c) 2011 The Regents "   \
+          "of University of California, Davis Campus.\n"                \
+          "%s is free software and comes with ABSOLUTELY NO WARRANTY.\n" \
+          "Distributed under the MIT License.\n\nWritten by %s\n",      \
+          Program_name, (double) Version, Program_name, Authors);       \
+  exit(EXIT_SUCCESS);                                                   \
+  break;
 /* end code drawn from system.h */
 
 
@@ -72,26 +75,40 @@ static struct option long_options[] = {
 };
 
 void usage(int status) {
-  fprintf(stdout, "\nUsage: scythe -a adapter_file.fasta sequence_file.fastq\n\
+  fputs("\nUsage: scythe -a adapter_file.fasta sequence_file.fastq\n\
 Trim 3'-end adapter contaminants off sequence files. If no output file\n\
 is specified, scythe will use stdout.\n\
 \n\
-Options:\n\
-  -p, --prior		prior (default: %0.3f)\n\
+Options:\n", stdout);
+  printf("\
+  -p, --prior		prior (default: %0.3f)\n", default_prior);
+  fputs("\
   -q, --quality-type	quality type, either illumina, solexa, or sanger (default: illumina)\n\
   -m, --matches-file	matches file (default: no output)\n\
   -o, --output-file	output trimmed sequences file (default: stdout)\n\
-  -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n\
-  -n, --min-match	smallest contaminant to consider (default: 0)\n\
+  -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n", stdout);
+  fputs("\
+  -n, --min-match	smallest contaminant to consider (default: 5)\n\
   --quiet		don't output statistics about trimming to stdout (default: off)\n\
   --help		display this help and exit\n\
-  --version		output version information and exit\n", default_prior);
+  --version		output version information and exit\n", stdout);
+  fputs("\n\
+  Information on quality schemes:\n\
+  phred			PHRED quality scores (e.g. from Roche 454). ASCII with no offset, range: [4, 60].\n\
+  sanger		Sanger are PHRED ASCII qualities with an offset of 33, range: [0, 93]. From \n\
+			NCBI SRA, or Illumina pipeline 1.8+.\n\
+  solexa		Solexa (also very early Illumina - pipeline < 1.3). ASCII offset of\n", stdout);
+  fputs("\
+	 		64, range: [-5, 62]. Uses a different quality-to-probabilities conversion than other\n\
+			schemes.\n\
+  illumina		Illumina output from pipeline versions between 1.3 and 1.7. ASCII offset of 64,\n\
+			range: [0, 62]\n", stdout);
   exit(status);
 }
 
 int main(int argc, char *argv[]) {
   kseq_t *seq;
-  int i, l, index, min=0;
+  int i, l, index, min=5;
   int debug=0, verbose=1;
   int contaminated=0, total=0;
   quality_type qual_type=ILLUMINA;
@@ -101,6 +118,7 @@ int main(int argc, char *argv[]) {
   gzFile adapter_fp=NULL, output_fp=stdout, matches_fp=NULL, fp;
   int optc;
   char *match_string;
+  int add_tag = 0;
   char tag[14] = "";
   extern char *optarg;
 
@@ -124,8 +142,9 @@ int main(int argc, char *argv[]) {
         debug = 1;
         break;
       case 't':
+        add_tag = 1;
         strcpy(tag, ";;cut_scythe");
-        printf("%s\n",tag);
+        printf("%s\n", tag);
         break;
       case 'Q':
         verbose = 0;
@@ -183,10 +202,11 @@ int main(int argc, char *argv[]) {
   }
   
   if ((index = optind) == argc) {
-    fprintf(stderr, "No FASTQ or FASTA file specified.\n");
+    fprintf(stderr, "No FASTQ file specified.\n");
     usage(EXIT_FAILURE);
   }
 
+ 
   /* load all adapter sequences into memory */
   if (!adapter_fp) {
     fprintf(stderr, "No adapter file specified.\n");
@@ -196,6 +216,13 @@ int main(int argc, char *argv[]) {
   gzclose(adapter_fp);
 
   fp = gzopen(argv[index], "r");
+
+  if (!fp) {
+    fprintf(stderr, "FASTQ file '%s' not found.\n", argv[index]);
+    return EXIT_FAILURE;
+  }
+
+
   seq = kseq_init(fp);
 
 
@@ -216,11 +243,10 @@ int main(int argc, char *argv[]) {
       /* Best match was classified as contaminated, print trimmed
          results and match entry (if specified). */
       contaminated++;
-      fprintf(output_fp, 
-              "@%s%s\n%.*s\n+%s%s\n%.*s\n", seq->name.s, tag,
-              (int) seq->seq.l-best_match->n, seq->seq.s, seq->name.s, tag, 
-              (int) seq->seq.l-best_match->n, seq->qual.s);
-      
+
+      /* Write out the trimmed sequence, with optional tag added */
+      write_fastq(output_fp, seq, add_tag, tag, best_match->n);
+
       /* print match for 5'-end; seq->seq.s is point to the
          approperiate place by taking the sequence length and
          subtracting the match length. */    
@@ -231,11 +257,13 @@ int main(int argc, char *argv[]) {
                                    &(seq->seq.s)[seq->seq.l-best_match->n], 
                                    best_match->match, best_match->n);
         
-        fprintf(matches_fp, "p(c|s): %f; p(!c|s): %f; adapter: %s\n%s\n%s\n%s\n\n", 
+        fprintf(matches_fp, "p(c|s): %f; p(!c|s): %f; adapter: %s\n%s\n%s\n%s\n", 
                 best_match->ps->contam, best_match->ps->random,
                 aa->adapters[best_match->adapter_index].name,
                 seq->name.s, match_string, 
                 &(seq->qual.s)[seq->qual.l-best_match->n]);
+        fprint_float_array(matches_fp, qual_to_probs(&(seq->qual.s)[seq->qual.l-best_match->n], qual_type), best_match->n);
+        fprintf(matches_fp, "\n\n");
         free(match_string);
       }
 
@@ -243,9 +271,10 @@ int main(int argc, char *argv[]) {
       aa->adapters[best_match->adapter_index].occurrences[best_match->n-1]++;
 
     } else {
-      /* No trimming done; print sequence as is. */
-      fprintf(output_fp, 
-              "@%s\n%s\n+%s\n%s\n", seq->name.s, seq->seq.s, seq->name.s, seq->qual.s);
+      /* No trimming done; print sequence as is; no tagging because
+         it's not trimmed.
+      */
+      write_fastq(output_fp, seq, 0, NULL, -1);
     }
     
     if (best_match)
@@ -256,14 +285,14 @@ int main(int argc, char *argv[]) {
   
   /* If --quiet not specified, print out a summary at the end. */
   if (verbose) {
-    printf("prior: %0.3f\n", prior);
-    printf("\nAdapter Trimming Complete\ncontaminated: %d, uncontaminated: %d, total: %d\n", 
+    fprintf(stderr, "prior: %0.3f\n", prior);
+    fprintf(stderr, "\nAdapter Trimming Complete\ncontaminated: %d, uncontaminated: %d, total: %d\n", 
            contaminated, total-contaminated, total);
-    printf("contamination rate: %f", contaminated/(float) total);
+    fprintf(stderr, "contamination rate: %f", contaminated/(float) total);
     for (i = 0; i < aa->n; i++) {
-      printf("\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name);
-      print_uint_array(aa->adapters[i].occurrences, aa->adapters[i].length);
-      printf("\n");
+      fprintf(stderr, "\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name);
+      fprint_uint_array(stderr, aa->adapters[i].occurrences, aa->adapters[i].length);
+      fprintf(stderr, "\n");
     }
   }
 

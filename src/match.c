@@ -37,47 +37,42 @@ match *find_best_match(const adapter_array *aa, const char *read,
   int i, l, first=1, rl=strlen(read), *max=NULL, *m=NULL, max_score=0, best_n=0, current_score, best_adapter;
   float *best_p_quals; /* for the subset of read qualities of the matching sequence */
   for (i = 0; i < aa->n; i++) {
-    if ((aa->adapters[i]).end == THREE_PRIME) {
-      if (min >= aa->adapters[i].length) {
-        fprintf(stderr, "error: Minimum match length (option -n) greater than or equal to length of adapter.\n");
-        exit(EXIT_FAILURE);
+    if (min >= aa->adapters[i].length) {
+      fprintf(stderr, "Minimum match length (option -n) greater than or equal to length of adapter.\n");
+      exit(EXIT_FAILURE);
+    }
+    for (l = (aa->adapters[i]).length; l > min; l--) {
+      m = score_sequence(&(read)[rl-l], (aa->adapters[i]).seq, l);
+      current_score = sum(m, l);
+      
+      /* the first sequence comparison is always the max_score */ 
+      if (first) {
+        max = m;
+        max_score = current_score;
+        best_p_quals = &(p_quals)[rl-l];
+        best_n = l;
+        first = 0;
+        best_adapter = i;
+        continue;
       }
-      for (l = (aa->adapters[i]).length; l > min; l--) {
-        m = score_sequence(&(read)[rl-l], (aa->adapters[i]).seq, l);
-        current_score = sum(m, l);
-        
-        /* the first sequence comparison is always the max_score */ 
-        if (first) {
-          max = m;
-          max_score = current_score;
-          best_p_quals = &(p_quals)[rl-l];
-          best_n = l;
-          first = 0;
-          best_adapter = i;
-          continue;
-        }
-        
-        if (current_score > max_score) {
-          if (max)
-            free(max); /* free last max array */
-          else
+      
+      if (current_score > max_score) {
+        if (max)
+          free(max); /* free last max array */
+        else
           max = xmalloc(l*sizeof(int));
-          max = m;
-          max_score = current_score;
-          best_p_quals = &(p_quals)[rl-l];
-          best_n = l;
-          best_adapter = i;
-        } else {
-          free(m);
-        }
-
-        /* early exit when it's no longer possible to score higher */
-        if (max_score >= l-1)
-          break;
+        max = m;
+        max_score = current_score;
+        best_p_quals = &(p_quals)[rl-l];
+        best_n = l;
+        best_adapter = i;
+      } else {
+        free(m);
       }
-    } else if ((aa->adapters[i]).end == FIVE_PRIME) {
-      /* check head of read */
-      first = 1;
+      
+      /* early exit when it's no longer possible to score higher */
+      if (max_score >= l-1)
+        break;
     }
   }
 
