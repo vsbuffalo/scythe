@@ -86,14 +86,36 @@ liberal trimming, i.e. of only a few bases.
 
 ## Notes
 
+Note that the two provided adapter sequence files contain non-FASTA
+characters to denote the locations of barcode sequences, which always
+appear in TruSeq adapters, and may or may not appear in forward and/or
+reverse reads using the original Solexa/Illumina adapter sequences,
+depending on library preparation. You'll need to modify the adapter
+sequence files in order to use them.
+
+In the case of the original Solexa/Illumina adapter sequences, we've seen
+barcodes "upstream" of forward reads (in which case the reverse complement
+of the barcode will appear before the adapter sequence at the 3'-end of 
+reverse reads - replacing the [NNNNNN]). We've also seen barcodes upstream 
+of reverse reads (in which case the reverse complement of the barcode will 
+appear before the adapter sequence at the 3'-end of forward reads - 
+replacing the [MMMMMM]). Your definition of the barcode may be someone
+else's reverse-complemented barcode, and the barcode may or may not be 6
+bases.
+
+In the case of TruSeq adapter sequences, there will always be a 6 bp
+barcode in place of the [NNNNNN] in sequence contaminating forward reads
+(if the fragment is short enough, of course). This barcode sequence should
+match the barcode included in the reads' FASTQ headers.
+
 Scythe only checks for 3'-end contaminants, up to the adapter's length
 into the 3'-end. For reads with contamination in *any* position, the
 program TagDust (<http://genome.gsc.riken.jp/osc/english/dataresource/>)
 is recommended. Scythe has the advantages of allowing fuzzier matching
 and being base quality-aware, while TagDust has the advantages of very
 fast matching (but allowing few mismatches, and not considering
-quality) and FDR. TagDust also removes contaminated reads *entirely*, while
-Scythe trims off contaminants. 
+quality) and FDR. Note that TagDust removes contaminated reads *entirely*,
+while Scythe trims off contaminating sequence, leaving valuable reads!
 
 A possible pipeline would run FASTQ reads through Scythe, then
 TagDust, then a quality-based trimmer, and finally through a read
