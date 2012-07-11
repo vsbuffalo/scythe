@@ -133,9 +133,8 @@ $$ P(C|S) = \frac{P(C) P(S|C)}{P(S)} $$
 
 Since these are mutually exclusive and exhaustive events, the
 \emph{maximum a posteriori} rule can be used to classify a top-scoring
-alignment as due to contamination or chance (e.g. if $P(C'|S) >
-P(C|S)$, the sequence is not contaminated at that position, and
-vice versa).
+alignment as due to contamination (if $P(C|S) > P(C'|S)$) or chance (if
+$P(C'|S) > P(C|S)$).
 
 Required in this Bayesian formulation is the prior of contamination,
 $P(C)$. This can be estimated by inspection of the sequences
