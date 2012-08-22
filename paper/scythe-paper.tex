@@ -18,40 +18,55 @@
 \begin{abstract}
 
 \section{Motivation:}
-Modern sequencing technologies can leave artifactual contaminant
-sequences at the 3'-end of reads. 3'-end regions also have the lowest
-quality bases that are likely to be called incorrectly, which makes
-identifying and removing 3'-end contaminants difficult. 
+Illumina's short read sequencing technology uses known adapter
+sequences that can contaminate the 3'-ends of reads when individual
+sample fragments are shorter than the read length. Unfortunately, the
+3'-ends of these reads are enriched with low quality bases that are
+more likely to be called incorrectly, which makes identifying and
+removing 3'-end contaminants difficult. However, removal of
+contaminating sequence is a critical step in most bioinformatics
+pipelines.
+
 
 \section{Results:} 
-Scythe is a program designed specifically to remove 3'-end
-contaminants. It searches for 3'-end contaminants and uses a Bayesian
-model that considers individual base qualities to decide whether a
-given match is a contaminant or background sequence. With a variety of
-contamination rates, Scythe outperforms other adapter removal software
-tools.
+We have written Scythe - a novel 3'-end adapter trimmer based on
+Bayesian classification that considers both sequence and base
+qualities. In our tests, Scythe outperforms other adapter removal
+tools across a wide range of contamination rates, and is more robust
+to parameter settings than other tools.
+
 
 \section{Availability:}
 Scythe is freely available under the MIT license at
 \href{http://github.com/vsbuffalo/scythe}{http://github.com/vsbuffalo/scythe}.
 
+
 \section{Contact:} \href{mailto:vsbuffalo@gmail.com}{vsbuffalo@gmail.com}
 \end{abstract}
 
-\section{Introduction}
-Scythe is focused on trimming 3'-end contaminants, specifically those
-due to adapters or barcodes. It embraces the Unix Philosophy of
-``programs that do one thing well'' (\citealp{raymond2003}). Many
-second-generation sequencing technologies such as Illumina's Genome
-Analyzer II and HiSeq have lower-quality 3'-end bases. These
-low-quality bases are more likely to have nucleotides called
-incorrectly, making contaminant identification more
-difficult. Futhermore, 3'-end quality deterioration is not uniform
-across all reads (see Fig. 1 in Supplementary Materials).
 
-By using a Bayesian classification procedure, Scythe accurately trims
-3'-end contaminants off reads. The underlying model differentially
-weights mismatching bases according to their FASTQ quality.
+\section{Introduction}
+Scythe embraces the Unix Philosophy of ``programs that do one thing
+well'' (\citealp{raymond2003}), and focuses on recognition and
+trimming of Illumina adapter contamination. Illumina's
+second-generation sequencing technology (MiSeq, GA series, HiSeq)
+often results in reads that have a known, largely unvarying adapter
+sequence that starts at variable (but largely 3'-biased) positions in
+reads. Bases at the 3'-end are also more difficult to call, and
+accordingly have low base qualities and high substitution error
+rates. Importantly, though, the 3'-end quality deterioration is not
+uniform across all reads (see Fig. 1 in Supplementary Materials).
+
+Low quality 3'-end bases are commonly trimmed as a first step, however
+this discards some evidence, albeit noisy, for adapter
+sequences. Scythe is meant to be run before quality trimming is
+performed, and uses a Bayesian classification scheme that
+differentially weights mismatches between the adapter sequence and
+bases in a read according to their particular base quality.
+
+We tested Scythe using a combination of real and simulated data, along
+with two other 3'-end adapter trimming tools: Btrim (ref) and Cutadapt
+(ref).
 
 % A common step in read quality improvement procedures is to remove
 % these low-quality 3'-end sequences from reads. This is thought to
@@ -74,41 +89,40 @@ weights mismatching bases according to their FASTQ quality.
 \begin{methods}
 \section{String Matching in Scythe}
 
-Scythe employs a simple string matching heuristic to find a best
-match. Scythe scores each alignment of the contaminant sequence
-against the read sequence, starting from the entire contaminant in the
-3'-end to incrementally fewer bases. A minimum match length can be
-specified via a parameter (by default, 5). Each of these alignments is
-scored using a $1$ for match, $-1$ for mismatch approach. The top
-scoring alignment is then passed to the probabilistic classification
-procedure, which decides whether the match is background sequence or a
-contaminant. The time complexity of Scythe's matching algorithm for a
-single adapter of length $l_a$ is $O(l_a^2 R)$ for a FASTQ file with
-$R$ entries.
+Scythe employs a simple, string matching heuristic to find a best
+match for a given contaminant sequence within a given read. Scythe
+scores ungapped alignments of the contaminant sequence against the
+read sequence, from a minimum overlap at the 3'-end (by default, 5 bp)
+to full overlap with right justification of the contaminant within the
+read. Each of these alignments is scored using a scheme of $1$ for a
+match, $-1$ for a mismatch. The top scoring alignment is then passed
+to the probabilistic classification procedure, described below. The
+time complexity of Scythe's matching algorithm for a single adapter of
+length $l_a$ is $O(l_a^2 R)$ for a FASTQ file with $R$ entries.
 
 
 \section{Bayesian Classification of Top-Scoring Matches}
 
-There are two mutually exclusive and exhaustive events: a top scoring
-match is a contaminant or it is random sequence (that happens to be
-similar to the adapter contaminant). A likelihood for each of these
-events, given probabilities of each base being called correctly and
-which bases mismatch the contaminant sequence, can be calculated.
+Considering the highest-scoring alignment of a contaminant sequence to
+a read, there are two mutually exclusive and exhaustive events: (1)
+there is a contaminant at the specified position, or (2) there is no
+contaminant at that position. A likelihood for each of these events,
+given probabilities of each base being called correctly (derived from
+the base qualities) and which bases mismatch the contaminant sequence,
+can be calculated.
 
 These likelihood functions assume models of error for each event. If
-the top-scoring match is contaminant sequence (event $C$), the
+the top-scoring match is contaminant-derived (event $C$), the
 likelihood $P(S | C)$ (where $S$ is the sequence match data) is:
 
 $$ P(S | C) = \prod_{i=1}^{l_t} q_i^{m_i} \cdot (1-q_i)^{1 - m_i} $$
 
 Where $m_i \in \{0, 1\}$ indicating whether the $i$ base is a mismatch
 or match (respectively) and $q_i$ is the probability the $i$ base is
-called correctly (from the ASCII-encoded quality). $l_t$ is the length
-of the top-scoring match.
-
-If the top-scoring sequence is not a contaminant sequence (event
-$C'$), it is assumed that the matches are just by chance. Thus, the
-likelihood function is:
+called correctly (from its base quality). $l_t$ is the length of the
+top-scoring match. On the other hand, if the top-scoring match is not
+contaminant-derived (event $C'$), it is assumed that the match
+occurred by chance, giving the likelihood function:
 
 $$ P(S | C') = \prod_{i=1}^{l_t} \left(\frac{1}{4}\right)^{m_i} \cdot \left(\frac{3}{4}\right)^{1 - m_i} $$
 
@@ -119,14 +133,15 @@ $$ P(C|S) = \frac{P(C) P(S|C)}{P(S)} $$
 
 Since these are mutually exclusive and exhaustive events, the
 \emph{maximum a posteriori} rule can be used to classify a top-scoring
-sequence as either contaminated or non-contaminated (e.g. if $P(C'|S)
-> P(C|S)$, the sequence is not contaminated and visa-versa).
+alignment as due to contamination (if $P(C|S) > P(C'|S)$) or chance (if
+$P(C'|S) > P(C|S)$).
 
 Required in this Bayesian formulation is the prior of contamination,
-$P(C)$. Specifying the prior may seem like a nuisance, but it is a
-useful parameter that can be adjusted for a variety of different
-contamination scenarios. More information on specifying a parameter is
-in Supplementary Materials.
+$P(C)$. This can be estimated by inspection of the sequences
+(i.e. counting perfect matches to a substring of the adapter
+sequence), though in practice Scythe's performance does not depend on
+an accurate estimate. More information on specifying the prior is in
+Supplementary Materials.
 
 \section{Results}
 \begin{centering}
@@ -139,74 +154,69 @@ in Supplementary Materials.
 \end{centering}
 
 Scythe was tested against two similar program: Btrim
-(\citealp{pmid21651976}) and Cutadapt (\citealp{EJ200}). Both
-Btrim and Cutadapt can handle insertions/deletions, but in Illumina
-data we've analzed, no indels in adapter contaminants were
-witnessed. This problem is more associated with 454 reads, which can
-have homopolymer repeats. Both Btrim and Cutadapt also include quality
-trimmers, which Scythe intentionally does not.
+(\citealp{pmid21651976}) and Cutadapt (\citealp{EJ200}). Both Btrim
+and Cutadapt can handle insertions/deletions, but these are rare in
+Illumina sequences. Whereas Btrim and Cutadapt also perform quality
+trimming, Scythe intentionally limits its scope to adapter trimming.
 
-To test Scythe, Btrim, and Cutadapt at 3'-end adapter contaminant
-removal, random reads were generated and contaminated at fixed
-contamination rates of 40\% and 70\%. FASTQ qualities from an Illumina
-HiSeq run were added to these read sequences. Real base qualities were
-used because properly modeling and simulating 3'-end quality
-degradation is an arduous task. For the two fixed contamination rates,
-ten replicate FASTQ files were generated randomly to ensure
+To test these tools, random reads were generated and contaminated at
+fixed contamination rates of 40\% and 70\%, and paired to base quality
+profiles from an Illumina HiSeq run, followed by mutation of each base
+at the rate designated by their base quality (i.e. a base with a
+quality score of 30 had a 1 in 1000 chance of being changed to a
+different, random base). For each contamination rate, ten replicate
+FASTQ files of 10,000 sequences each were generated, to ensure that
 contaminated and non-contaminated reads were well dispersed across
-different read qualities. Each simulated FASTQ reads file contains
-10,000 entries.
+different base quality profiles.
 
 Each program was run with varying parameters to see how true positive
 and false positive rates change. Btrim uses a fixed number of
 mismatches, so integer values from 0 to 10 were used. Cutadapt uses an
 error rate for a matched sequence, which was varied from 0 to 0.95 in
-0.05 increments. Likewise, Scythe uses the same values for its prior
-parameter. Each piece of software was run with all other options off
-to ensure a fair comparison of 3'-end contaminant removal.
+0.05 increments. Scythe uses the same values as Cutadapt, for the
+prior. Each program was run with all other options off to ensure a
+fair comparison of 3'-end contaminant removal.
 
 While Cutadapt and Scythe only trim reads, Btrim occasionally removes
 a read entirely from the sample. For comparison purposes, we count
 this as trimming the entire length of a read. We compared the length
 of the original simulated read to the trimmed read for all programs,
-parameters, replicates, and contamination rates. This, combined with
-information about whether a read was contaminated allows the
-calculation of true positive and false positive rates. Also, we
-investigate how many times Btrim, Cutadapt, and Scythe incorrectly
-trim a read, e.g. whether the trimmed length is not equal to the
-contaminate length for reads that were contaminated.
+parameters, replicates, and contamination rates, in order to calculate
+true positive and false positive rates. We also counted how many times
+Btrim, Cutadapt, and Scythe incorrectly trimmed a read, e.g. whether
+the trimmed length was not equal to the contaminated length for reads
+that were contaminated.
 
-In these tests, we find that Scythe outperforms Btrim and Cutadapt in
-terms of true positive rates for a variety of false positive rates
-across a variety of parameters (Fig. \ref{fig:02}). Furthermore,
-Scythe also has fewer incorrectly trimmed reads across a variety of
-parameters compared to Btrim and Cutadapt. Differences in
-contamination rates (40\% and 70\%) do not adversely affect Scythe's
-performance. Note that Cutadapt performs well too, but is very
-sensitive to its error parameter. Changing Cutadapt's error parameter
-from 35\% to 40\% slightly increases the true positive rate, but
-drastically increases the false positive rate. By contrast, Scythe's
-probabilistic approach is much less sensitive to different prior
-parameters, illustrated by the overplotting of the 35\% to 95\% prior
-parameters in the ROC curve (Fig. \ref{fig:02}). Furthermore, we argue
-that Scythe's parameter is easier to intuitively choose than a
-sequence error rate.
+All three tools performed almost almost identically at the 40\% and
+70\% contamination rates (Fig. \ref{fig:02}a). Scythe outperformed
+Btrim and Cutadapt in terms of true positive rates for a variety of
+false positive rates across a wide range of parameters
+(Fig. \ref{fig:02}). In addition, Scythe's performance (TP/FP rates)
+was relatively stable across a wide range of priors - most notably
+between ~0.45 and 0.95, whereas small parameter changes had large
+effects on the TP/FP rates for Cutadapt and Btrim. Scythe also has
+fewer incorrectly trimmed reads across a variety of parameters
+compared to Btrim and Cutadapt (Fig. \ref{fig:02}b).
 
 \end{methods}
 
+
 \section{Conclusion}
 
-When compared to Btrim and Cutadapt, Scythe is a very accurate 3'-end
-contaminant trimmer appropriate for a variety of pre-analysis quality
-pipelines. It is a modular and orthogonal program, allowing use with
-other read processing tools and diagnostics between each step. We
-suggest that Scythe be used for all Illumina read processing
-pipelines.
+When compared to Btrim and Cutadapt, Scythe outperforms both in terms
+of the True Positive (TP) rate across a large range of input
+parameters, and Scythe would not generate results with a False
+Positive (FP) rate above ~0.4 in the data tested. Scythe's 'prior'
+parameter can be set through straightforward inspection of the reads
+(for perfect matches), and is more weakly correlated with the FP rate,
+meaning inaccurate settings will not suddenly cause poor performance.
 
-We suspect Scythe's superior performance is due to its (1)
-consideration of base-level qualities and (2) Scythe's use of Bayesian
-model rather than a simple fixed-number of mismatches or fixed-error
-approach.
+In Scythe, we have implemented an approach to 3'-end contaminant
+trimming that is novel in two respects: (1) consideration of
+base-level qualities and (2) the use of a Bayesian model rather than a
+simple fixed-number of mismatches or fixed-error approach. We believe
+that this approach can improve contaminant removal in many pipelines
+and applications.
 
 
 \section*{Acknowledgement}
