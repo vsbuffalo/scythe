@@ -1,7 +1,7 @@
 PROGRAM_NAME = scythe
 VERSION = 0.981
 CC = gcc
-CFLAGS = -Wall -pedantic -DVERSION=$(VERSION) -std=gnu99
+CFLAGS = -Wall -pedantic -DVERSION=$(VERSION) -std=gnu99 
 DEBUG = -g
 OPT = -O3
 ARCHIVE = $(PROGRAM_NAME)_$(VERSION)
@@ -27,7 +27,7 @@ valgrind: build
 	valgrind --leak-check=full --show-reachable=yes ./scythe -a solexa_adapters.fa test.fastq
 
 test: match.o util.o prob.o tests.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $? -o tests && ./tests
+	$(CC) $(CFLAGS) $? $(LDFLAGS) -o tests && ./tests
 
 testclean:
 	rm -rf ./tests
@@ -42,7 +42,7 @@ dist:
 	tar -zcf $(ARCHIVE).tar.gz src Makefile
 
 build: match.o scythe.o util.o prob.o 
-	$(CC) $(CFLAGS) $(LDFLAGS) $? -o scythe
+	$(CC) $(CFLAGS) $? $(LDFLAGS) -o scythe
 
 debug:
-	$(CC) $(LDFLAGS) $(DEBUG) -o scythe src/*.c
+	$(CC) $(DEBUG) $(LDFLAGS) -o scythe src/*.c
