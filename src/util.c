@@ -12,11 +12,10 @@
 #include "kseq.h"
 #include "scythe.h"
 
-#define MIN(a,b) ((a)>(b)?(b):(a))
-
+__KSEQ_BASIC(static, gzFile)
 __KS_GETC(gzread, BUFFER_SIZE)
 __KS_GETUNTIL(gzread, BUFFER_SIZE)
-__KSEQ_READ
+__KSEQ_READ(static)
 
 
 void *xmalloc(size_t size) {
@@ -189,25 +188,25 @@ void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, char *tag, int matc
       if (seq->comment.s)
         fprintf(output_fp, 
                 "@%s %s%s-%d\n%.*s\n+%s %s%s-%d\n%.*s\n", seq->name.s, seq->comment.s, tag, match_n, 
-                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, seq->comment.s, tag, match_n, 
-                (int) seq->seq.l-match_n, seq->qual.s);
+                (int) match_n, seq->seq.s, seq->name.s, seq->comment.s, tag, match_n, 
+                (int) match_n, seq->qual.s);
       else 
         fprintf(output_fp, 
                 "@%s%s-%d\n%.*s\n+%s%s-%d\n%.*s\n", seq->name.s, tag, match_n, 
-                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, tag, match_n, 
-                (int) seq->seq.l-match_n, seq->qual.s);
+                (int) match_n, seq->seq.s, seq->name.s, tag, match_n, 
+                (int) match_n, seq->qual.s);
 
     } else {
       if (seq->comment.s)
         fprintf(output_fp, 
                 "@%s %s\n%.*s\n+%s %s\n%.*s\n", seq->name.s, seq->comment.s,
-                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, seq->comment.s,
-                (int) seq->seq.l-match_n, seq->qual.s);
+                (int) match_n, seq->seq.s, seq->name.s, seq->comment.s,
+                (int) match_n, seq->qual.s);
       else
         fprintf(output_fp, 
                 "@%s\n%.*s\n+%s\n%.*s\n", seq->name.s,
-                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s,
-                (int) seq->seq.l-match_n, seq->qual.s);
+                (int) match_n, seq->seq.s, seq->name.s,
+                (int) match_n, seq->qual.s);
 
     }
   } else { 
@@ -218,4 +217,36 @@ void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, char *tag, int matc
       fprintf(output_fp, 
               "@%s\n%s\n+%s\n%s\n", seq->name.s, seq->seq.s, seq->name.s, seq->qual.s);
   }
+}
+
+void print_summary(adapter_array *aa, float prior, int uncontaminated, 
+                   int contaminated, int total) {
+  int i;
+  fprintf(stderr, "prior: %0.3f\n", prior);
+  fprintf(stderr, "\nAdapter Trimming Complete\ncontaminated: %d, uncontaminated: %d, total: %d\n", 
+          contaminated, total-contaminated, total);
+  fprintf(stderr, "contamination rate: %f", contaminated/(float) total);
+  for (i = 0; i < aa->n; i++) {
+    fprintf(stderr, "\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name);
+    fprint_uint_array(stderr, aa->adapters[i].occurrences, aa->adapters[i].length);
+    fprintf(stderr, "\n");
+  }
+}
+
+void print_match(kseq_t *seq, match *match, gzFile matches_fp, 
+                 const adapter_array *aa, quality_type qual_type) {
+  /* Make a string that indicates the position of the matches with "|"s. */
+  char *match_string;
+  match_string = fmt_matches((aa->adapters[match->adapter_index]).seq, 
+                             &(seq->seq.s)[match->n], 
+                             match->match, match->n);
+  
+  fprintf(matches_fp, "p(c|s): %f; p(!c|s): %f; adapter: %s\n%s\n%s\n%s\n", 
+          match->ps->contam, match->ps->random,
+          aa->adapters[match->adapter_index].name,
+          seq->name.s, match_string, 
+          &(seq->qual.s)[match->n]);
+  fprint_float_array(matches_fp, qual_to_probs(&(seq->qual.s)[match->n], qual_type), match->n);
+  fprintf(matches_fp, "\n\n");
+  free(match_string);
 }
