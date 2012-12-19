@@ -169,45 +169,27 @@ int sum(const int *x, int n) {
   return s;
 }
 
-
 void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, int shift) {
   char tag[] = ";;cut_scythe";
   if (shift >= 0) {
     if (add_tag) {
-      if (seq->comment.s)
-        fprintf(output_fp, 
-                "@%s %s%s-%d\n%.*s\n+\n%.*s\n", seq->name.s, seq->comment.s, 
-                tag, shift, 
-                (int) shift, seq->seq.s, 
-                (int) shift, seq->qual.s);
-      else 
-        fprintf(output_fp, 
-                "@%s%s-%d\n%.*s\n+\n%.*s\n", seq->name.s, tag, shift, 
-                (int) shift, seq->seq.s, 
-                (int) shift, seq->qual.s);
-
+      fprintf(output_fp, 
+              "@%s %.*s%s-%d\n%.*s\n+\n%.*s\n", seq->name.s, (int) seq->comment.l, 
+              seq->comment.s, tag, shift, 
+              (int) shift, seq->seq.s, 
+              (int) shift, seq->qual.s);
     } else {
-      if (seq->comment.s)
-        fprintf(output_fp, 
-                "@%s %s\n%.*s\n+\n%.*s\n", seq->name.s, seq->comment.s,
-                (int) shift, seq->seq.s,
-                (int) shift, seq->qual.s);
-      else
-        fprintf(output_fp, 
-                "@%s\n%.*s\n+\n%.*s\n", seq->name.s,
-                (int) shift, seq->seq.s,
-                (int) shift, seq->qual.s);
-
+      fprintf(output_fp, 
+              "@%s %.*s\n%.*s\n+\n%.*s\n", seq->name.s, (int) seq->comment.l,
+              seq->comment.s,
+              (int) shift, seq->seq.s,
+              (int) shift, seq->qual.s);
     }
-  } else { 
-    if (seq->comment.s)
-      fprintf(output_fp, 
-              "@%s %s\n%s\n+\n%s\n", seq->name.s, seq->comment.s, seq->seq.s, 
-              seq->qual.s);
-    else
-      fprintf(output_fp, 
-              "@%s\n%s\n+\n%s\n", seq->name.s, seq->seq.s, seq->qual.s);
-  }
+  } else
+    fprintf(output_fp, 
+            "@%s %.*s\n%s\n+\n%s\n", seq->name.s, (int) seq->comment.l, 
+            seq->comment.s, seq->seq.s, 
+            seq->qual.s);
 }
 
 void print_summary(adapter_array *aa, float prior, int uncontaminated, 

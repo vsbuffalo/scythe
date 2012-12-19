@@ -65,29 +65,29 @@ match *find_best_match(const adapter_array *aa, const char *read,
       curr_score = sum(curr_arr, al);
       if (curr_score > best_score) {
         best_score = curr_score; 
-        best_arr = curr_arr;
         best_length = al;
         best_shift = shift;
         best_p_quals = &(p_quals)[shift];
-        free(ps);
+        free(ps); free(best_arr);
+        best_arr = curr_arr;
         ps = posterior(best_arr, best_p_quals, prior, 0.25, best_length);
         if (ps && ps->is_contam) {
           break;
         }
-      }
+      } else free(curr_arr);
     }
     if (ps && ps->is_contam)
       break;
   }
   
-  if (best_score <= 0)
+  if (ps && !ps->is_contam)
     return NULL;
   
   /* save this match */
   best_match = xmalloc(sizeof(match));
   best_match->match = best_arr;
-  best_match->shift = ps->is_contam ? best_shift : -1;
-  best_match->length = ps->is_contam ? best_length : -1;
+  best_match->shift = best_shift;
+  best_match->length = best_length;
   best_match->ps = ps;
   best_match->score = best_score;
   best_match->adapter_index = best_adapter;

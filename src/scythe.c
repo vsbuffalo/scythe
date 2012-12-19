@@ -110,7 +110,7 @@ Options:\n", stdout);
 
 int main(int argc, char *argv[]) {
   kseq_t *seq;
-  int l, index, min=5;
+  int l, index, shift, min=5;
   int debug=0, verbose=1;
   int contaminated=0, total=0;
   quality_type qual_type=SANGER;
@@ -225,6 +225,7 @@ int main(int argc, char *argv[]) {
      file (or stdout), and record matches in a match file if specifed.
   */
   while ((l = kseq_read(seq)) >= 0) {
+    shift = -1;
     if (!seq->qual.s) {
       fputs("Sequence file missing or has malformed quality line.\n", stderr);
       usage(EXIT_FAILURE);
@@ -235,11 +236,12 @@ int main(int argc, char *argv[]) {
     
     if (best_match && best_match->ps->is_contam) {
       contaminated++;
+      shift = best_match->shift;
       if (matches_fp) print_match(seq, best_match, matches_fp, aa, qual_type);
       /* TODO */
       /* aa->adapters[best_match->adapter_index].occurrences[best_match->n-1]++; */
     }    
-    write_fastq(output_fp, seq, add_tag, best_match->shift);
+    write_fastq(output_fp, seq, add_tag, shift);
     if (best_match) destroy_match(best_match);
     free(qprobs);
     total++;
