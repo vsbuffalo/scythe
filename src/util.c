@@ -93,7 +93,7 @@ char *fmt_matches(const char *seqa, const char *seqb, const int *matches, const 
   sprintf(out, "%.*s\n", n, seqa);
   ptr += n + 1;
   for (i = 0; i < n; i++) {
-    if (matches[i] == MATCH_SCORE) {
+    if (matches[i]) {
       sprintf(ptr, "|");
     } else {
       sprintf(ptr, " ");
@@ -212,7 +212,7 @@ void print_match(kseq_t *seq, match *match, gzFile matches_fp,
   char *match_string;
   match_string = fmt_matches((aa->adapters[match->adapter_index]).seq,
                              &(seq->seq.s)[match->shift], 
-                             match->match, match->length);
+                             match->match_pos, match->length);
   
   fprintf(matches_fp, "p(c|s): %f; p(!c|s): %f; adapter: %s\n%s\n%s\n%.*s\n", 
           match->ps->contam, match->ps->random,
