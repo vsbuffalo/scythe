@@ -22,8 +22,8 @@ int *score_sequence(const char *seq, const char *pattern, int n) {
   */
   int i;
   int *matches;
-  assert(strlen(seq) >= strlen(pattern));
-  assert(strlen(pattern) <= n);
+  assert(strlen(seq) >= n);
+  assert(strlen(pattern) >= n);
   matches = xmalloc(sizeof(int) * n);
   for (i = 0; i < n; i++) {
     assert(seq[i] && pattern[i]); /* no string termination */
@@ -47,7 +47,7 @@ match *find_best_match(const adapter_array *aa, const char *read,
   
   match *best_match=NULL;
   int i, shift, max_shift;
-  int *best_arr, best_adapter=0, best_n=0, best_score=INT_MIN;
+  int *best_arr, best_adapter=0, best_length=0, best_shift=0, best_score=INT_MIN;
   int al, curr_score, *curr_arr;
   int rl = strlen(read);
   posterior_set *ps=NULL;
@@ -66,10 +66,11 @@ match *find_best_match(const adapter_array *aa, const char *read,
       if (curr_score > best_score) {
         best_score = curr_score; 
         best_arr = curr_arr;
-        best_n = shift;
+        best_length = al;
+        best_shift = shift;
         best_p_quals = &(p_quals)[shift];
         free(ps);
-        ps = posterior(best_arr, best_p_quals, prior, 0.25, best_n);
+        ps = posterior(best_arr, best_p_quals, prior, 0.25, best_length);
         if (ps && ps->is_contam) {
           break;
         }
@@ -85,18 +86,15 @@ match *find_best_match(const adapter_array *aa, const char *read,
   /* save this match */
   best_match = xmalloc(sizeof(match));
   best_match->match = best_arr;
-  best_match->n = best_n;
+  best_match->shift = ps->is_contam ? best_shift : -1;
+  best_match->length = ps->is_contam ? best_length : -1;
   best_match->ps = ps;
   best_match->score = best_score;
   best_match->adapter_index = best_adapter;
   best_match->p_quals = best_p_quals;
-  best_match->match_pos = xmalloc(best_n*sizeof(int));
-  for (i = 0; i < best_n; i++) {
-    if (best_match->match[i] == MATCH_SCORE)
-      best_match->match_pos[i] = 1;
-    else
-      best_match->match_pos[i] = 0;
-  }
+  best_match->match_pos = calloc(best_length, sizeof(int));
+  for (i = 0; i < best_length; i++)
+    best_match->match_pos[i] = best_match->match[i] == MATCH_SCORE;
   return best_match;
 }
 

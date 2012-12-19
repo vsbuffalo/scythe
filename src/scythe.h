@@ -75,13 +75,13 @@ typedef struct posterior_set {
 } posterior_set;
 
 typedef struct match {
-  int *match;
-  int n;
-  int score;
-  int *match_pos;
-  float *p_quals;
-  posterior_set *ps;
-  int adapter_index;
+  int *match, *match_pos; // match positions; TODO simplify
+  int shift; // position adapter found, -1 if is_contam is 0
+  int length; // length of adapter contamination, -1 if is_contam is 0
+  int score; // match score
+  int adapter_index; // index of which adapter was found
+  float *p_quals; // array of qualities convered to probs
+  posterior_set *ps; // posterior set
 } match;
 
 /* prob.c prototypes */
@@ -101,7 +101,7 @@ void print_int_array(const int *, int);
 void print_uint_array(const unsigned int *, int);
 void fprint_uint_array(FILE *, const unsigned int *, int);
 int sum(const int *, int);
-void write_fastq(gzFile, kseq_t *, int, char *, int);
+void write_fastq(gzFile, kseq_t *, int, int);
 void print_summary(adapter_array *, float, int, int, int);
 
 /* match.c prototypes */

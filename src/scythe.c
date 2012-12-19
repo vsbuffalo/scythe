@@ -26,7 +26,7 @@ static const float default_prior = 0.05;
 #endif
 
 #ifndef AUTHORS
-#define AUTHORS "Vince Buffalo, UC Davis Bioinformatics Core\nEmail: <vsbuffaloAAAAA@ucdavis.edu> (poly-A tail removed)"
+#define AUTHORS "Vince Buffalo, UC Davis\nEmail: <vsbuffaloAAAAA@ucdavis.edu> (poly-A tail removed)"
 #endif
 
 #ifndef VERSION
@@ -85,7 +85,7 @@ Options:\n", stdout);
   printf("\
   -p, --prior		prior (default: %0.3f)\n", default_prior);
   fputs("\
-  -q, --quality-type	quality type, either illumina, solexa, or sanger (default: illumina)\n\
+  -q, --quality-type	quality type, either illumina, solexa, or sanger (default: sanger)\n\
   -m, --matches-file	matches file (default: no output)\n\
   -o, --output-file	output trimmed sequences file (default: stdout)\n\
   -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n", stdout);
@@ -113,15 +113,13 @@ int main(int argc, char *argv[]) {
   int l, index, min=5;
   int debug=0, verbose=1;
   int contaminated=0, total=0;
-  quality_type qual_type=ILLUMINA;
+  quality_type qual_type=SANGER;
   match *best_match;
   float *qprobs, prior=default_prior;
   adapter_array *aa;
   gzFile adapter_fp=NULL, output_fp=stdout, matches_fp=NULL, fp;
   int optc;
   int add_tag = 0;
-  char tag[] = ";;cut_scythe";
-
   extern char *optarg;
 
   while (1) {
@@ -237,22 +235,12 @@ int main(int argc, char *argv[]) {
     
     if (best_match && best_match->ps->is_contam) {
       contaminated++;
-      /* write the FASTQ entry, and if we have a match file, write that */
-      write_fastq(output_fp, seq, add_tag, tag, best_match->n);
       if (matches_fp) print_match(seq, best_match, matches_fp, aa, qual_type);
-
-      /* record occurence in adapter position */ 
-      aa->adapters[best_match->adapter_index].occurrences[best_match->n-1]++;
-
-    } else {
-      /* No trimming done; print sequence as is; no tagging because
-         it's not trimmed.
-      */
-      write_fastq(output_fp, seq, 0, NULL, -1);
-    }
-    
-    if (best_match)
-      destroy_match(best_match);
+      /* TODO */
+      /* aa->adapters[best_match->adapter_index].occurrences[best_match->n-1]++; */
+    }    
+    write_fastq(output_fp, seq, add_tag, best_match->shift);
+    if (best_match) destroy_match(best_match);
     free(qprobs);
     total++;
   }
