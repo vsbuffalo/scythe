@@ -47,7 +47,7 @@ match *find_best_match(const adapter_array *aa, const char *read,
   
   match *best_match=NULL;
   int i, shift, max_shift;
-  int *best_arr, best_adapter=0, best_length=0, best_shift=0, best_score=INT_MIN;
+  int *best_arr=NULL, best_adapter=0, best_length=0, best_shift=0, best_score=INT_MIN;
   int al, curr_score, *curr_arr;
   int rl = strlen(read);
   posterior_set *ps=NULL;
