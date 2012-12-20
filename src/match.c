@@ -65,8 +65,6 @@ match *find_best_match(const adapter_array *aa, const char *read,
       al = min(aa->adapters[i].length, strlen(&(read)[shift]));
       curr_arr = score_sequence(&(read)[shift], (aa->adapters[i]).seq, al);
       curr_score = sum(curr_arr, al);
-      /* printf("shift: %d; score: %d\n", shift, curr_score); */
-      /* printf("scoring sequences: \n%.*s\n%.*s\n", (int) al, &(read)[shift], (int) al, (aa->adapters[i]).seq); */
       if (curr_score > best_score) {
         best_score = curr_score; 
         best_length = al;
@@ -74,14 +72,18 @@ match *find_best_match(const adapter_array *aa, const char *read,
         best_p_quals = &(p_quals)[shift];
         free(best_arr); free(ps);
         best_arr = curr_arr;
-        curr_arr = NULL; /* to protect against freeing best */
+        curr_arr = NULL; /* to protect against freeing best_arr */
         ps = posterior(best_arr, best_p_quals, prior, 0.25, best_length);
-        if (ps && ps->is_contam)
+        if (ps->is_contam) {
           break;
-        else free(ps);
+        } else {
+          free(ps);
+          free(best_arr);
+        }
       }
       free(curr_arr);
     }
+    free(curr_arr);
     if (ps && ps->is_contam)
       break;
   }
