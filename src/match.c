@@ -72,13 +72,15 @@ match *find_best_match(const adapter_array *aa, const char *read,
         best_length = al;
         best_shift = shift;
         best_p_quals = &(p_quals)[shift];
-        free(best_arr);
+        free(best_arr); free(ps);
         best_arr = curr_arr;
+        curr_arr = NULL; /* to protect against freeing best */
         ps = posterior(best_arr, best_p_quals, prior, 0.25, best_length);
         if (ps && ps->is_contam)
           break;
         else free(ps);
-      } else free(curr_arr);
+      }
+      free(curr_arr);
     }
     if (ps && ps->is_contam)
       break;
