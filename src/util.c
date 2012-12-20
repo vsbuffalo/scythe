@@ -194,16 +194,16 @@ void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, int shift) {
 
 void print_summary(adapter_array *aa, float prior, int uncontaminated, 
                    int contaminated, int total) {
-  int i;
+  /* int i; */
   fprintf(stderr, "prior: %0.3f\n", prior);
   fprintf(stderr, "\nAdapter Trimming Complete\ncontaminated: %d, uncontaminated: %d, total: %d\n", 
           contaminated, total-contaminated, total);
   fprintf(stderr, "contamination rate: %f", contaminated/(float) total);
-  for (i = 0; i < aa->n; i++) {
-    fprintf(stderr, "\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name);
-    fprint_uint_array(stderr, aa->adapters[i].occurrences, aa->adapters[i].length);
-    fprintf(stderr, "\n");
-  }
+  /* for (i = 0; i < aa->n; i++) { */
+  /*   fprintf(stderr, "\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name); */
+  /*   fprint_uint_array(stderr, aa->adapters[i].occurrences, aa->adapters[i].length); */
+  /*   fprintf(stderr, "\n"); */
+  /* } */
 }
 
 void print_match(kseq_t *seq, match *match, gzFile matches_fp, 
