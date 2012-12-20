@@ -52,14 +52,16 @@ match *find_best_match(const adapter_array *aa, const char *read,
   int rl = strlen(read);
   posterior_set *ps=NULL;
   float *best_p_quals;
-  
-  for (i = 0; i < aa->n; i++) {
-    if (min_l >= aa->adapters[i].length) {
-      fprintf(stderr, "Minimum match length (option -n) greater than or equal to length of adapter.\n");
-      exit(EXIT_FAILURE);
-    }
-    max_shift = rl - min_l;
-    for (shift = 0; shift < max_shift; shift++) {
+
+  max_shift = rl - min_l;  
+  for (shift = 0; shift < max_shift; shift++) {
+    for (i = 0; i < aa->n; i++) {
+      if (min_l >= aa->adapters[i].length) {
+        fprintf(stderr, "Minimum match length (option -n) greater than or " \
+                "equal to length of adapter.\n");
+        exit(EXIT_FAILURE);
+      }
+      
       al = min(aa->adapters[i].length, strlen(&(read)[shift]));
       curr_arr = score_sequence(&(read)[shift], (aa->adapters[i]).seq, al);
       curr_score = sum(curr_arr, al);
@@ -73,8 +75,11 @@ match *find_best_match(const adapter_array *aa, const char *read,
         free(ps); free(best_arr);
         best_arr = curr_arr;
         ps = posterior(best_arr, best_p_quals, prior, 0.25, best_length);
+        if (ps && ps->is_contam) break;
       } else free(curr_arr);
     }
+    if (ps && ps->is_contam)
+      break;
   }
   
   if (ps && !ps->is_contam)
