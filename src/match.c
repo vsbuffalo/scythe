@@ -46,14 +46,14 @@ match *find_best_match(const adapter_array *aa, const char *read,
   */
   
   match *best_match=NULL;
-  int i, shift, max_shift;
+  int i, shift, max_shift, found_contam;
   int *best_arr=NULL, best_adapter=0, best_length=0, best_shift=0, best_score=INT_MIN;
-  int al, curr_score, *curr_arr;
+  int al, curr_score, *curr_arr=NULL;
   int rl = strlen(read);
   posterior_set *ps=NULL;
   float *best_p_quals;
 
-  max_shift = rl - min_l;  
+  max_shift = rl - min_l;
   for (shift = 0; shift < max_shift; shift++) {
     for (i = 0; i < aa->n; i++) {
       if (min_l >= aa->adapters[i].length) {
@@ -61,7 +61,6 @@ match *find_best_match(const adapter_array *aa, const char *read,
                 "equal to length of adapter.\n");
         exit(EXIT_FAILURE);
       }
-      
       al = min(aa->adapters[i].length, strlen(&(read)[shift]));
       curr_arr = score_sequence(&(read)[shift], (aa->adapters[i]).seq, al);
       curr_score = sum(curr_arr, al);
@@ -70,25 +69,23 @@ match *find_best_match(const adapter_array *aa, const char *read,
         best_length = al;
         best_shift = shift;
         best_p_quals = &(p_quals)[shift];
-        free(best_arr); free(ps);
         best_arr = curr_arr;
-        curr_arr = NULL; /* to protect against freeing best_arr */
         ps = posterior(best_arr, best_p_quals, prior, 0.25, best_length);
-        if (ps->is_contam) {
+        found_contam = ps->is_contam;
+        if (found_contam) {
           break;
         } else {
-          free(ps);
+          free(ps); 
+          ps=NULL;
           free(best_arr);
         }
-      }
-      free(curr_arr);
+      } else free(curr_arr);
     }
-    free(curr_arr);
-    if (ps && ps->is_contam)
+    if (found_contam)
       break;
   }
   
-  if (ps && !ps->is_contam)
+  if (!found_contam) /* no match found */
     return NULL;
   
   /* save this match */
