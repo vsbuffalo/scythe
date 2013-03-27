@@ -21,13 +21,13 @@
 __KS_TYPE(gzFile)
 __KS_BASIC(gzFile, BUFFER_SIZE)
 __KSEQ_TYPE(gzFile)
-__KSEQ_BASIC(gzFile)
 
 #define MAX_ADAPTERS 1000
 #define MATCH_SCORE 1
 #define MISMATCH_SCORE -1
 
 #define IS_FASTQ(quality_type) INTEGER(quality_type)[0] >= 0
+#define min(a,b) ((a)>(b)?(b):(a))
 
 typedef enum {
   PHRED, 
@@ -63,55 +63,52 @@ typedef struct adapter_array {
   int n;
 } adapter_array;
 
-enum contam {
-  NOT_CONTAM,
-  CONTAM
-};
-
 typedef struct likelihood_set {
   double random;
   double contam;
 } likelihood_set;
 
 typedef struct posterior_set {
-  enum contam is_contam;
+  int is_contam;
   double random;
   double contam;
 } posterior_set;
 
 typedef struct match {
-  int *match;
-  int n;
-  int score;
-  int *match_pos;
-  float *p_quals;
-  posterior_set *ps;
-  int adapter_index;
+  int *match, *match_pos; // match positions; TODO simplify
+  int shift; // position adapter found, -1 if is_contam is 0
+  int length; // length of adapter contamination, -1 if is_contam is 0
+  int score; // match score
+  int adapter_index; // index of which adapter was found
+  float *p_quals; // array of qualities convered to probs
+  posterior_set *ps; // posterior set
 } match;
 
 /* prob.c prototypes */
-float *qual_to_probs(const char *qual, quality_type q_type);
-double p_data(const int *matches, float *p_quals, float p_prior_contam, float p_match, int n);
-posterior_set *posterior(const int *matches, float *p_quals, float p_prior, float p_match, int n);
-likelihood_set *likelihood(const int *matches, float *p_quals, float p_match, int n);
+float *qual_to_probs(const char *, quality_type);
+double p_data(const int *, float *, float, float, int);
+posterior_set *posterior(const int *, float *, float, float, int);
+likelihood_set *likelihood(const int *, float *, float, int);
 
 /* util.c prototypes */
-void *xmalloc(size_t size);
-adapter_array *load_adapters(gzFile fp);
-void destroy_adapters(adapter_array *aa, int n);
-char *fmt_matches(const char *seqa, const char *seqb, const int *matches, const int n);
-void print_float_array(const float *array, int n);
-void fprint_float_array(FILE *fp, const float *array, int n);
-void print_int_array(const int *array, int n);
-void print_uint_array(const unsigned int *array, int n);
-void fprint_uint_array(FILE *fp, const unsigned int *array, int n);
-int sum(const int *x, int n);
-void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, char *tag, int match_n);
+void *xmalloc(size_t);
+adapter_array *load_adapters(gzFile);
+void destroy_adapters(adapter_array *, int);
+char *fmt_matches(const char *, const char *, const int *, const int);
+void print_float_array(const float *, int);
+void fprint_float_array(FILE *, const float *, int);
+void print_int_array(const int *, int);
+void print_uint_array(const unsigned int *, int);
+void fprint_uint_array(FILE *, const unsigned int *, int);
+int sum(const int *, int);
+void write_fastq(gzFile, kseq_t *, int, int);
+void print_summary(adapter_array *, float, int, int, int);
 
 /* match.c prototypes */
-int *score_sequence(const char *seqa, const char *seqb, int n);
-match *find_best_match(const adapter_array *aa, const char *read, float *p_quals, float prior, float p_match, int min);
-void destroy_match(match *m);
+int *score_sequence(const char *, const char *, int);
+match *find_best_match(const adapter_array *, const char *, float *, float, float, int);
+void print_match(kseq_t *, match *, gzFile, const adapter_array *, quality_type);
+void destroy_match(match *);
 
 
 #endif /* SCYTHE_H */

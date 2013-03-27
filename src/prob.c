@@ -59,6 +59,13 @@ double p_data(const int *matches, float *p_quals, float p_prior_contam, float p_
 posterior_set *posterior(const int *matches, float *p_quals, float p_prior, float p_match, int n) {
   /* The posterior for both the random model and the non-random
      model.
+     
+     `matches`: a int array of 0s and 1s indicating matching and
+     mismatch positions.
+     `p_quals`: quality values convered to probabilities.
+     `p_prior`: prior probability
+     `p_match`: probability of a match (for DNA: default is 0.25)
+     `n`: match length.     
   */
 
   posterior_set *ps = xmalloc(sizeof(posterior_set));
@@ -66,11 +73,7 @@ posterior_set *posterior(const int *matches, float *p_quals, float p_prior, floa
   double p_denom = p_data(matches, p_quals, p_prior, p_match, n);
   ps->contam = (ls->contam * p_prior)/p_denom;
   ps->random = (ls->random * (1-p_prior))/p_denom;
-
-  if (ps->contam > ps->random)
-    ps->is_contam = CONTAM;
-  else
-    ps->is_contam = NOT_CONTAM;
+  ps->is_contam = ps->contam > ps->random;
   free(ls);
   return ps;  
 }

@@ -14,9 +14,10 @@
 #include "scythe.h"
 #include "kseq.h"
 
+__KSEQ_BASIC(static, gzFile)
 __KS_GETC(gzread, BUFFER_SIZE)
 __KS_GETUNTIL(gzread, BUFFER_SIZE)
-__KSEQ_READ
+__KSEQ_READ(static)
 
 static const float default_prior = 0.05;
 
@@ -25,7 +26,7 @@ static const float default_prior = 0.05;
 #endif
 
 #ifndef AUTHORS
-#define AUTHORS "Vince Buffalo, UC Davis Bioinformatics Core\nEmail: <vsbuffaloAAAAA@ucdavis.edu> (poly-A tail removed)"
+#define AUTHORS "Vince Buffalo, UC Davis\nEmail: <vsbuffaloAAAAA@ucdavis.edu> (poly-A tail removed)"
 #endif
 
 #ifndef VERSION
@@ -63,6 +64,7 @@ static struct option long_options[] = {
   /* Options with an argument */
   {"adapter-file", required_argument, 0, 'a'},
   {"prior", required_argument, 0, 'p'},
+  {"partial", required_argument, 0, 'P'},
   {"quality-type", required_argument, 0, 'q'},
   {"matches-file", required_argument, 0, 'm'},
   {"output-file", required_argument, 0, 'c'},
@@ -83,7 +85,7 @@ Options:\n", stdout);
   printf("\
   -p, --prior		prior (default: %0.3f)\n", default_prior);
   fputs("\
-  -q, --quality-type	quality type, either illumina, solexa, or sanger (default: illumina)\n\
+  -q, --quality-type	quality type, either illumina, solexa, or sanger (default: sanger)\n\
   -m, --matches-file	matches file (default: no output)\n\
   -o, --output-file	output trimmed sequences file (default: stdout)\n\
   -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n", stdout);
@@ -108,23 +110,21 @@ Options:\n", stdout);
 
 int main(int argc, char *argv[]) {
   kseq_t *seq;
-  int i, l, index, min=5;
+  int l, index, shift, min=5;
   int debug=0, verbose=1;
   int contaminated=0, total=0;
-  quality_type qual_type=ILLUMINA;
+  quality_type qual_type=SANGER;
   match *best_match;
   float *qprobs, prior=default_prior;
   adapter_array *aa;
   gzFile adapter_fp=NULL, output_fp=stdout, matches_fp=NULL, fp;
   int optc;
-  char *match_string;
   int add_tag = 0;
-  char tag[14] = "";
   extern char *optarg;
 
   while (1) {
     int option_index = 0;
-    optc = getopt_long(argc, argv, "dtp:a:o:q:m:o:n:", long_options, &option_index);
+    optc = getopt_long(argc, argv, "dtfp:a:o:q:m:o:n:", long_options, &option_index);
 
     if (optc == -1)
        break;
@@ -143,8 +143,6 @@ int main(int argc, char *argv[]) {
         break;
       case 't':
         add_tag = 1;
-        strcpy(tag, ";;cut_scythe");
-        printf("%s\n", tag);
         break;
       case 'Q':
         verbose = 0;
@@ -205,7 +203,6 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "No FASTQ file specified.\n");
     usage(EXIT_FAILURE);
   }
-
  
   /* load all adapter sequences into memory */
   if (!adapter_fp) {
@@ -222,15 +219,13 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-
   seq = kseq_init(fp);
 
-
-  /* Loop through entire file, find best match against adapters, and
-     score these best matches. Write trimmed sequences to file (or
-     stdout), and record matches in a match file if specifed. 
+  /* Loop through entire sequence file. Write trimmed sequences to
+     file (or stdout), and record matches in a match file if specifed.
   */
   while ((l = kseq_read(seq)) >= 0) {
+    shift = -1;
     if (!seq->qual.s) {
       fputs("Sequence file missing or has malformed quality line.\n", stderr);
       usage(EXIT_FAILURE);
@@ -240,61 +235,20 @@ int main(int argc, char *argv[]) {
     best_match = find_best_match(aa, seq->seq.s, qprobs, prior, 0.25, min);
     
     if (best_match && best_match->ps->is_contam) {
-      /* Best match was classified as contaminated, print trimmed
-         results and match entry (if specified). */
       contaminated++;
-
-      /* Write out the trimmed sequence, with optional tag added */
-      write_fastq(output_fp, seq, add_tag, tag, best_match->n);
-
-      /* print match for 5'-end; seq->seq.s is point to the
-         approperiate place by taking the sequence length and
-         subtracting the match length. */    
-      
-      if (matches_fp) {
-        /* Make a string that indicates the position of the matches with "|"s. */
-        match_string = fmt_matches((aa->adapters[best_match->adapter_index]).seq, 
-                                   &(seq->seq.s)[seq->seq.l-best_match->n], 
-                                   best_match->match, best_match->n);
-        
-        fprintf(matches_fp, "p(c|s): %f; p(!c|s): %f; adapter: %s\n%s\n%s\n%s\n", 
-                best_match->ps->contam, best_match->ps->random,
-                aa->adapters[best_match->adapter_index].name,
-                seq->name.s, match_string, 
-                &(seq->qual.s)[seq->qual.l-best_match->n]);
-        fprint_float_array(matches_fp, qual_to_probs(&(seq->qual.s)[seq->qual.l-best_match->n], qual_type), best_match->n);
-        fprintf(matches_fp, "\n\n");
-        free(match_string);
-      }
-
-      /* record occurence in adapter position */ 
-      aa->adapters[best_match->adapter_index].occurrences[best_match->n-1]++;
-
-    } else {
-      /* No trimming done; print sequence as is; no tagging because
-         it's not trimmed.
-      */
-      write_fastq(output_fp, seq, 0, NULL, -1);
-    }
-    
-    if (best_match)
-      destroy_match(best_match);
+      shift = best_match->shift;
+      if (matches_fp) print_match(seq, best_match, matches_fp, aa, qual_type);
+      /* TODO */
+      /* aa->adapters[best_match->adapter_index].occurrences[best_match->n-1]++; */
+    }    
+    write_fastq(output_fp, seq, add_tag, shift);
+    if (best_match) destroy_match(best_match);
     free(qprobs);
     total++;
   }
   
-  /* If --quiet not specified, print out a summary at the end. */
-  if (verbose) {
-    fprintf(stderr, "prior: %0.3f\n", prior);
-    fprintf(stderr, "\nAdapter Trimming Complete\ncontaminated: %d, uncontaminated: %d, total: %d\n", 
-           contaminated, total-contaminated, total);
-    fprintf(stderr, "contamination rate: %f", contaminated/(float) total);
-    for (i = 0; i < aa->n; i++) {
-      fprintf(stderr, "\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name);
-      fprint_uint_array(stderr, aa->adapters[i].occurrences, aa->adapters[i].length);
-      fprintf(stderr, "\n");
-    }
-  }
+  if (verbose) 
+    print_summary(aa, prior, total-contaminated, contaminated, total);
 
   kseq_destroy(seq);
   destroy_adapters(aa, MAX_ADAPTERS);
