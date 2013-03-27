@@ -1,4 +1,4 @@
-# Scythe - A very simple adapter trimmer (version 0.981 BETA)
+# Scythe - A Bayesian adapter trimmer (version 0.981 BETA)
 
 Scythe and all supporting documentation 
 Copyright (c) Vince Buffalo, 2011-2012
@@ -27,7 +27,7 @@ quality-based trimming, as part of a read quality control pipeline.
 The Bayesian approach Scythe uses compares two likelihood models: the
 probability of seeing the matches in a sequence given contamination,
 and not given contamination. Given that the read is contaminated, the
-probability of seeing a certain number of matches and mistmatches is a
+probability of seeing a certain number of matches and mismatches is a
 function of the quality of the sequence. Given the read is not
 contaminated (and is thus assumed to be random sequence), the
 probability of seeing a certain number of matches and mismatches is
@@ -108,14 +108,21 @@ barcode in place of the [NNNNNN] in sequence contaminating forward reads
 (if the fragment is short enough, of course). This barcode sequence should
 match the barcode included in the reads' FASTQ headers.
 
-Scythe only checks for 3'-end contaminants, up to the adapter's length
-into the 3'-end. For reads with contamination in *any* position, the
-program TagDust (<http://genome.gsc.riken.jp/osc/english/dataresource/>)
-is recommended. Scythe has the advantages of allowing fuzzier matching
+Scythe only checks for 3'-end contaminants. As of commit `7f49366`,
+the algorithm has changd, and Scythe now matches 3' contaminants up to
+the 5'-end. Still, do not use Scythe for 5'-trimming as (1) this is a
+trivial problem for most Illumina sequences, as the quality is high in
+this region, and (2) Scythe does not allow for adapters overlap the
+5'-end (though this may come in the future).
+
+For reads with contamination in *any* position, the program TagDust
+(<http://genome.gsc.riken.jp/osc/english/dataresource/>) is
+recommended. Scythe has the advantages of allowing fuzzier matching
 and being base quality-aware, while TagDust has the advantages of very
 fast matching (but allowing few mismatches, and not considering
-quality) and FDR. Note that TagDust removes contaminated reads *entirely*,
-while Scythe trims off contaminating sequence, leaving valuable reads!
+quality) and FDR. Note that TagDust removes contaminated reads
+*entirely*, while Scythe trims off contaminating sequence, leaving
+valuable uncontaminated read sequence!
 
 A possible pipeline would run FASTQ reads through Scythe, then
 TagDust, then a quality-based trimmer, and finally through a read
@@ -194,6 +201,11 @@ our group (the UC Davis Bioinformatics Core) has seen, as a small bad
 quality run can quickly exhaust even a high numbers of fixed
 mismatches and lead to higher false negatives.
 
+### How do I cite Scythe?
+
+Just link to this Github repository, until I finish the manuscript
+(sorry).
+
 ## Reporting Bugs
 
 Scythe is free software and is proved without a warranty. However, I
@@ -209,5 +221,5 @@ me directly.
 ## Is there a paper about Scythe?
 
 I am currently writing a paper on Scythe's methods. In my preliminary
-testing, Scythe has fewew false positives and false negatives than
+testing, Scythe has fewer false positives and false negatives than
 it competitors.
