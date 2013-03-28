@@ -1,4 +1,4 @@
-# Scythe - A Bayesian adapter trimmer (version 0.981 BETA)
+# Scythe - A Bayesian adapter trimmer (version 0.991 BETA)
 
 Scythe and all supporting documentation 
 Copyright (c) Vince Buffalo, 2011-2012
@@ -221,5 +221,5 @@ me directly.
 ## Is there a paper about Scythe?
 
 I am currently writing a paper on Scythe's methods. In my preliminary
-testing, Scythe has fewer false positives and false negatives than
-it competitors.
+testing, Scythe has fewer false positives and false negatives than its
+competitors.

@@ -19,7 +19,7 @@ __KS_GETC(gzread, BUFFER_SIZE)
 __KS_GETUNTIL(gzread, BUFFER_SIZE)
 __KSEQ_READ(static)
 
-static const float default_prior = 0.05;
+static const float default_prior = 0.3;
 
 #ifndef PROGRAM_NAME
 #define PROGRAM_NAME "scythe"
