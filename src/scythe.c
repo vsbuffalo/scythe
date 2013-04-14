@@ -69,6 +69,7 @@ static struct option long_options[] = {
   {"matches-file", required_argument, 0, 'm'},
   {"output-file", required_argument, 0, 'c'},
   {"min-match", required_argument, 0, 'n'},
+  {"min-keep", required_argument, 0, 'M'},
   {"quiet", no_argument, 0, 'Q'},
   {"tag", no_argument, 0, 't'},
   {GETOPT_HELP_OPTION_DECL},
@@ -91,6 +92,7 @@ Options:\n", stdout);
   -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n", stdout);
   fputs("\
   -n, --min-match	smallest contaminant to consider (default: 5)\n\
+  -M, --min-keep	smallest sequence to output (default: 35)\n\
   --quiet		don't output statistics about trimming to stdout (default: off)\n\
   --help		display this help and exit\n\
   --version		output version information and exit\n", stdout);
@@ -110,7 +112,7 @@ Options:\n", stdout);
 
 int main(int argc, char *argv[]) {
   kseq_t *seq;
-  int l, index, shift, min=5;
+  int l, index, shift, min=5, min_keep=35;
   int debug=0, verbose=1;
   int contaminated=0, total=0;
   quality_type qual_type=SANGER;
@@ -163,6 +165,9 @@ int main(int argc, char *argv[]) {
         break;
       case 'n':
         min = atoi(optarg);
+        break;
+      case 'M':
+        min_keep = atoi(optarg);
         break;
       case 'q':
         if (strcmp(optarg, "illumina") == 0)
@@ -241,7 +246,7 @@ int main(int argc, char *argv[]) {
       /* TODO */
       /* aa->adapters[best_match->adapter_index].occurrences[best_match->n-1]++; */
     }    
-    write_fastq(output_fp, seq, add_tag, shift);
+    write_fastq(output_fp, seq, add_tag, shift, min_keep);
     if (best_match) destroy_match(best_match);
     free(qprobs);
     total++;

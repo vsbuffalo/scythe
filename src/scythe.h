@@ -101,7 +101,7 @@ void print_int_array(const int *, int);
 void print_uint_array(const unsigned int *, int);
 void fprint_uint_array(FILE *, const unsigned int *, int);
 int sum(const int *, int);
-void write_fastq(gzFile, kseq_t *, int, int);
+void write_fastq(gzFile, kseq_t *, int, int, int);
 void print_summary(adapter_array *, float, int, int, int);
 
 /* match.c prototypes */

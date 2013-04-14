@@ -169,14 +169,19 @@ int sum(const int *x, int n) {
   return s;
 }
 
-void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, int shift) {
+void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, int shift, int min_keep) {
   char tag[] = ";;cut_scythe";
-  char *sequence;
-  char N[] = "N";
-  if (!seq->seq.l)
-    sequence = N;
-  else
+  char *sequence, *qual;
+
+  /* check if we have fewer than min-match */ 
+  if (shift != -1 && seq->seq.l - shift <= min_keep) {
+    sequence = "N";
+    qual = "B";
+    shift = -1;
+  } else {
     sequence = seq->seq.s;
+    qual = seq->qual.s;
+  }
   if (shift >= 0) {
     
     if (add_tag) {
@@ -184,19 +189,18 @@ void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, int shift) {
               "@%s %.*s%s-%d\n%.*s\n+\n%.*s\n", seq->name.s, (int) seq->comment.l, 
               seq->comment.s, tag, shift, 
               (int) shift, sequence,
-              (int) shift, seq->qual.s);
+              (int) shift, qual);
     } else {
       fprintf(output_fp, 
               "@%s %.*s\n%.*s\n+\n%.*s\n", seq->name.s, (int) seq->comment.l,
               seq->comment.s,
               (int) shift, sequence,
-              (int) shift, seq->qual.s);
+              (int) shift, qual);
     }
   } else
     fprintf(output_fp, 
             "@%s %.*s\n%s\n+\n%s\n", seq->name.s, (int) seq->comment.l, 
-            seq->comment.s, sequence, 
-            seq->qual.s);
+            seq->comment.s, sequence, qual);
 }
 
 void print_summary(adapter_array *aa, float prior, int uncontaminated, 
