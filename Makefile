@@ -1,7 +1,9 @@
 PROGRAM_NAME = scythe
 VERSION = 0.991
 CC = gcc
-CFLAGS = -Wall -pedantic -DVERSION=$(VERSION) -std=gnu99 -g -O0
+CFLAGS = -Wall -pedantic -DVERSION=$(VERSION) -std=gnu99 -O3
+DEBUG = -g
+OPT = -O3
 ARCHIVE = $(PROGRAM_NAME)_$(VERSION)
 LDFLAGS = -lz -lm
 LDTESTFLAGS = -lcheck
