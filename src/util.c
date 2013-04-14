@@ -174,7 +174,7 @@ void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, int shift, int min_
   char *sequence, *qual;
 
   /* check if we have fewer than min-match */ 
-  if (shift != -1 && seq->seq.l - shift <= min_keep) {
+  if (shift != -1 && shift <= min_keep) {
     sequence = "N";
     qual = "B";
     shift = -1;

@@ -92,7 +92,7 @@ Options:\n", stdout);
   -t, --tag		add a tag to the header indicating Scythe cut a sequence (default: off)\n", stdout);
   fputs("\
   -n, --min-match	smallest contaminant to consider (default: 5)\n\
-  -M, --min-keep	smallest sequence to output (default: 35)\n\
+  -M, --min-keep	filter sequnces less than or equal to this length (default: 35)\n\
   --quiet		don't output statistics about trimming to stdout (default: off)\n\
   --help		display this help and exit\n\
   --version		output version information and exit\n", stdout);
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 
   while (1) {
     int option_index = 0;
-    optc = getopt_long(argc, argv, "dtfp:a:o:q:m:o:n:", long_options, &option_index);
+    optc = getopt_long(argc, argv, "dtfp:a:o:q:m:o:n:M:", long_options, &option_index);
 
     if (optc == -1)
        break;
@@ -229,6 +229,7 @@ int main(int argc, char *argv[]) {
   /* Loop through entire sequence file. Write trimmed sequences to
      file (or stdout), and record matches in a match file if specifed.
   */
+  int first = 1;
   while ((l = kseq_read(seq)) >= 0) {
     shift = -1;
     if (!seq->qual.s) {
