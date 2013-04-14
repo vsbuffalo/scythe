@@ -171,24 +171,31 @@ int sum(const int *x, int n) {
 
 void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, int shift) {
   char tag[] = ";;cut_scythe";
+  char *sequence;
+  char N[] = "N";
+  if (!seq->seq.l)
+    sequence = N;
+  else
+    sequence = seq->seq.s;
   if (shift >= 0) {
+    
     if (add_tag) {
       fprintf(output_fp, 
               "@%s %.*s%s-%d\n%.*s\n+\n%.*s\n", seq->name.s, (int) seq->comment.l, 
               seq->comment.s, tag, shift, 
-              (int) shift, seq->seq.s, 
+              (int) shift, sequence,
               (int) shift, seq->qual.s);
     } else {
       fprintf(output_fp, 
               "@%s %.*s\n%.*s\n+\n%.*s\n", seq->name.s, (int) seq->comment.l,
               seq->comment.s,
-              (int) shift, seq->seq.s,
+              (int) shift, sequence,
               (int) shift, seq->qual.s);
     }
   } else
     fprintf(output_fp, 
             "@%s %.*s\n%s\n+\n%s\n", seq->name.s, (int) seq->comment.l, 
-            seq->comment.s, seq->seq.s, 
+            seq->comment.s, sequence, 
             seq->qual.s);
 }
 
