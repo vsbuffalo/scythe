@@ -48,7 +48,7 @@ dist:
 	tar -zcf $(ARCHIVE).tar.gz src Makefile
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $? -o scythe
+	$(CC) $(CFLAGS) $? $(LDFLAGS) -o scythe
 
 lib: libscythe.so
 
