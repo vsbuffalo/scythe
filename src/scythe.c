@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
   aa = load_adapters(adapter_fp);
   gzclose(adapter_fp);
 
-  fp = gzopen(argv[index], "r");
+  fp = strcmp(argv[index], "-") ? gzopen(argv[index], "r") : gzdopen(fileno(stdin), "r");
 
   if (!fp) {
     fprintf(stderr, "FASTQ file '%s' not found.\n", argv[index]);
