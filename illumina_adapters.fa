@@ -1,4 +1,8 @@
->Multiplexing_adapter_1
+>multiplexing-adapter-1
 GATCGGAAGAGCACACGTCT
->Multiplexing_adapter_2
+>multiplexing-adapter-2
 CACTCTTTCCCTACACGACGCTCTTCCGATCT
+>paired-end-adapter-1
+GATCGGAAGAGCGGTTCAGCAGGAATGCCGAG
+>paired-end-adapter-2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
