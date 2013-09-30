@@ -46,12 +46,12 @@ match *find_best_match(const adapter_array *aa, const char *read,
   */
   
   match *best_match=NULL;
-  int i, shift, max_shift, found_contam;
+  int i, shift, max_shift, found_contam=0;
   int *best_arr=NULL, best_adapter=0, best_length=0, best_shift=0, best_score=INT_MIN;
   int al, curr_score, *curr_arr=NULL;
   int rl = strlen(read);
   posterior_set *ps=NULL;
-  float *best_p_quals;
+  float *best_p_quals=NULL;
 
   max_shift = rl - min_l;
   for (shift = 0; shift < max_shift; shift++) {

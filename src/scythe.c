@@ -30,7 +30,7 @@ static const float default_prior = 0.3;
 #endif
 
 #ifndef VERSION
-#define VERSION 0
+#define VERSION 0.992
 #endif
 
 /* Options drawn from GNU's coreutils/src/system.h */
@@ -119,7 +119,8 @@ int main(int argc, char *argv[]) {
   match *best_match;
   float *qprobs, prior=default_prior;
   adapter_array *aa;
-  gzFile adapter_fp=NULL, output_fp=stdout, matches_fp=NULL, fp;
+  gzFile adapter_fp=NULL, fp;
+  FILE *output_fp=stdout, *matches_fp=NULL;
   int optc;
   int add_tag = 0;
   extern char *optarg;

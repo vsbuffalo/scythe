@@ -169,7 +169,7 @@ int sum(const int *x, int n) {
   return s;
 }
 
-void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, int shift, int min_keep) {
+void write_fastq(FILE *output_fp, kseq_t *seq, int add_tag, int shift, int min_keep) {
   char tag[] = ";;cut_scythe";
   char *sequence, *qual;
 
@@ -217,7 +217,7 @@ void print_summary(adapter_array *aa, float prior, int uncontaminated,
   /* } */
 }
 
-void print_match(kseq_t *seq, match *match, gzFile matches_fp, 
+void print_match(kseq_t *seq, match *match, FILE *matches_fp, 
                  const adapter_array *aa, quality_type qual_type) {
   /* Make a string that indicates the position of the matches with "|"s. */
   char *match_string;

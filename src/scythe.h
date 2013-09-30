@@ -101,13 +101,13 @@ void print_int_array(const int *, int);
 void print_uint_array(const unsigned int *, int);
 void fprint_uint_array(FILE *, const unsigned int *, int);
 int sum(const int *, int);
-void write_fastq(gzFile, kseq_t *, int, int, int);
+void write_fastq(FILE *, kseq_t *, int, int, int);
 void print_summary(adapter_array *, float, int, int, int);
 
 /* match.c prototypes */
 int *score_sequence(const char *, const char *, int);
 match *find_best_match(const adapter_array *, const char *, float *, float, float, int);
-void print_match(kseq_t *, match *, gzFile, const adapter_array *, quality_type);
+void print_match(kseq_t *, match *, FILE *, const adapter_array *, quality_type);
 void destroy_match(match *);
 
 
