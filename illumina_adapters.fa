@@ -1,8 +1,12 @@
->multiplexing-adapter-1
+>multiplexing-forward-contam
 GATCGGAAGAGCACACGTCT
->alt-paired-end-adapter-1
+>forward-contam
 GATCGGAAGAGCGGTTCAGCAGGAATGCCGAG
->TruSeq-forward-contam
+>truseq-forward-contam
 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC
->TruSeq-reverse-contam
+>truseq-reverse-contam
 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA
+>nextera-forward-read-contam
+CTGTCTCTTATACACATCTCCGAGCCCACGAGAC
+>nextera-reverse-read-contam
+CTGTCTCTTATACACATCTGACGCTGCCGACGA
