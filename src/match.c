@@ -70,6 +70,7 @@ match *find_best_match(const adapter_array *aa, const char *read,
         best_shift = shift;
         best_p_quals = &(p_quals)[shift];
         best_arr = curr_arr;
+        best_adapter = i;
         ps = posterior(best_arr, best_p_quals, prior, 0.25, best_length);
         found_contam = ps->is_contam;
         if (found_contam) {
