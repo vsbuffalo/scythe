@@ -47,7 +47,7 @@ Scythe requires Zlib, which can be obtained at <http://www.zlib.net/>.
 
 To build Scythe, enter:
 
-    make build
+    make all
 
 Then, copy or move "scythe" to a directory in your $PATH.
 
