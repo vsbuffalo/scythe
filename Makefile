@@ -33,7 +33,7 @@ valgrind: build
 	valgrind --leak-check=full --show-reachable=yes ./scythe -a solexa_adapters.fa test.fastq
 
 test: clean match.o util.o prob.o test.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $(LDTESTFLAGS) $? -o test && ./test
+	$(CC) $(CFLAGS) $? -o test $(LDFLAGS) $(LDTESTFLAGS) && ./test
 
 testclean:
 	rm -rf ./tests
@@ -48,10 +48,10 @@ dist:
 	tar -zcf $(ARCHIVE).tar.gz src Makefile
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) $? $(LDFLAGS) -o scythe
+	$(CC) $(CFLAGS) $? -o scythe $(LDFLAGS)
 
 lib: libscythe.so
 
-libscythe.so: CLFAGS += -fpic
+libscythe.so: CFLAGS += -fpic
 libscythe.so: $(LOBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -shared -o $@ $^
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
