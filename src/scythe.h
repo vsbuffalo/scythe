@@ -100,12 +100,12 @@ void fprint_float_array(FILE *, const float *, int);
 void print_int_array(const int *, int);
 void print_uint_array(const unsigned int *, int);
 void fprint_uint_array(FILE *, const unsigned int *, int);
-int sum(const int *, int);
+extern int sum(const int *, size_t);
 void write_fastq(FILE *, kseq_t *, int, int, int);
 void print_summary(adapter_array *, float, int, int, int);
 
 /* match.c prototypes */
-int *score_sequence(const char *, const char *, int);
+int *score_sequence(const char *, const char *, size_t);
 match *find_best_match(const adapter_array *, const char *, float *, float, float, int);
 void print_match(kseq_t *, match *, FILE *, const adapter_array *, quality_type);
 void destroy_match(match *);

@@ -161,8 +161,8 @@ void fprint_uint_array(FILE *fp, const unsigned int *array, int n) {
   }
 }
 
-int sum(const int *x, int n) {
-  int i;
+inline int sum(const int *x, size_t n) {
+  size_t i;
   int s = 0;
   for (i = 0; i < n; i++)
     s += x[i];
