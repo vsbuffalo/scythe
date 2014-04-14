@@ -1,4 +1,4 @@
-# Scythe - A Bayesian adapter trimmer (version 0.992 BETA)
+# Scythe - A Bayesian adapter trimmer (version 0.993 BETA)
 
 Scythe and all supporting documentation 
 Copyright (c) Vince Buffalo, 2011-2012
