@@ -1,7 +1,7 @@
 # Scythe - A Bayesian adapter trimmer (version 0.993 BETA)
 
-Scythe and all supporting documentation 
-Copyright (c) Vince Buffalo, 2011-2012
+Scythe and all supporting documentation
+Copyright (c) Vince Buffalo, 2011-2014
 
 Contact: Vince Buffalo <vsbuffaloAAAAA@gmail.com> (with the poly-A tail removed)
 
@@ -84,7 +84,7 @@ equal to this parameter) to keep after trimming with `-M <integer>`:
 
 The default is 5. If this pre-processing is upstream of assembly on a
 very contaminated lane, decreasing this parameter could lead to *very*
-liberal trimming, i.e. of only a few bases. 
+liberal trimming, i.e. of only a few bases.
 
 ## Notes
 
@@ -97,10 +97,10 @@ sequence files in order to use them.
 
 In the case of the original Solexa/Illumina adapter sequences, we've seen
 barcodes "upstream" of forward reads (in which case the reverse complement
-of the barcode will appear before the adapter sequence at the 3'-end of 
-reverse reads - replacing the [NNNNNN]). We've also seen barcodes upstream 
-of reverse reads (in which case the reverse complement of the barcode will 
-appear before the adapter sequence at the 3'-end of forward reads - 
+of the barcode will appear before the adapter sequence at the 3'-end of
+reverse reads - replacing the [NNNNNN]). We've also seen barcodes upstream
+of reverse reads (in which case the reverse complement of the barcode will
+appear before the adapter sequence at the 3'-end of forward reads -
 replacing the [MMMMMM]). Your definition of the barcode may be someone
 else's reverse-complemented barcode, and the barcode may or may not be 6
 bases.
@@ -132,7 +132,7 @@ quality statistics program such as qrqc
 (<http://bioconductor.org/packages/devel/bioc/html/qrqc.html>) or FASTqc
 (<http://www.bioinformatics.bbsrc.ac.uk/projects/fastqc/>).
 
-## FAQ 
+## FAQ
 
 ### Does Scythe work with paired-end data?
 
@@ -186,7 +186,7 @@ first 3 bases, 5 of the first 4 bases, etc.
 
 No, as these have no quality information.
 
-### How can I report a bug? 
+### How can I report a bug?
 
 See the section below.
 
