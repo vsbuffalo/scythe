@@ -258,6 +258,8 @@ int main(int argc, char *argv[]) {
 
   kseq_destroy(seq);
   destroy_adapters(aa, MAX_ADAPTERS);
+  if (output_fp != stdout && output_fp != NULL)
+      fclose(output_fp);
   gzclose(fp);
   return 0;
 }
