@@ -8,7 +8,7 @@
 #include <string.h>
 #include "scythe.h"
 
-int *score_sequence(const char *seq, const char *pattern, int n) {
+int *score_sequence(const char *seq, const char *pattern, size_t n) {
   /* 
      Score a string using constant match and mismatch scores. Assumes
      seq is longer than or of equal length to pattern. Only the first
@@ -20,10 +20,12 @@ int *score_sequence(const char *seq, const char *pattern, int n) {
      |----pattern-----|
 
   */
-  int i;
+  size_t i;
   int *matches;
+/* These are addressed by the assert below
   assert(strlen(seq) >= n);
   assert(strlen(pattern) >= n);
+ */
   matches = xmalloc(sizeof(int) * n);
   for (i = 0; i < n; i++) {
     assert(seq[i] && pattern[i]); /* no string termination */
@@ -35,21 +37,21 @@ int *score_sequence(const char *seq, const char *pattern, int n) {
   return matches;
 }
 
-match *find_best_match(const adapter_array *aa, const char *read,  
+match *find_best_match(const adapter_array *aa, const char *read,
                        float *p_quals, float prior, float p_match, int min_l) {
-  /* 
+  /*
    Take an adapter array, and check the read against all
    adapters. Brute force string matching is used. This is to avoid
    approximate matching algorithms which required an a priori
    specified number mismatches.
 
   */
-  
+
   match *best_match=NULL;
   int i, shift, max_shift, found_contam=0;
   int *best_arr=NULL, best_adapter=0, best_length=0, best_shift=0, best_score=INT_MIN;
-  int al, curr_score, *curr_arr=NULL;
-  int rl = strlen(read);
+  int curr_score, *curr_arr=NULL;
+  size_t al, rl = strlen(read);
   posterior_set *ps=NULL;
   float *best_p_quals=NULL;
 
@@ -61,11 +63,11 @@ match *find_best_match(const adapter_array *aa, const char *read,
                 "equal to length of adapter.\n");
         exit(EXIT_FAILURE);
       }
-      al = min(aa->adapters[i].length, strlen(&(read)[shift]));
+      al = min(aa->adapters[i].length, rl - shift);
       curr_arr = score_sequence(&(read)[shift], (aa->adapters[i]).seq, al);
       curr_score = sum(curr_arr, al);
       if (curr_score > best_score) {
-        best_score = curr_score; 
+        best_score = curr_score;
         best_length = al;
         best_shift = shift;
         best_p_quals = &(p_quals)[shift];
