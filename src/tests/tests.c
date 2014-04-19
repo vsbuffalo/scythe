@@ -34,13 +34,15 @@ void test_score_sequence(void) {
   char *seqa = "ATCGATCGATCGATCGATCGATCG";
   char *seqb = "AACGATCGATCGATCGATCGATCG";
   int cmp1[] = {1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  int *cmp1_t = score_sequence(seqa, seqb, strlen(seqa));
+  int *cmp1_t = calloc(24, sizeof(*cmp1_t));
+  score_sequence(cmp1_t, seqa, seqb, strlen(seqa));
 
   TEST_INIT;
   TEST_ARRAY(cmp1, cmp1_t, 24, "score_sequence");
 
-  TEST(sum(score_sequence(seqa, seqb, strlen(seqa)), strlen(seqa)) == 22, "sum of score_sequence");
+  TEST(sum(score_sequence(cmp1_t, seqa, seqb, strlen(seqa)), strlen(seqa)) == 22, "sum of score_sequence");
 
+  free(cmp1_t);
   TEST_CLOSE;
 }
 
