@@ -1,5 +1,5 @@
 PROGRAM_NAME = scythe
-VERSION = 0.991
+VERSION = 0.993
 CC = gcc
 DEBUG ?= 0
 CFLAGS = -Wall -pedantic -DVERSION=$(VERSION) -std=gnu99
