@@ -1,4 +1,4 @@
-# Scythe - A Bayesian adapter trimmer (version 0.993 BETA)
+# Scythe - A Bayesian adapter trimmer (version 0.994 BETA)
 
 Scythe and all supporting documentation
 Copyright (c) Vince Buffalo, 2011-2014
@@ -69,18 +69,18 @@ If you'd like to use standard out, it is recommended you use the
 
 Also, more detailed output about matches can be obtained with:
 
-    scythe -a adapter_file.fasta -o trimmed_sequences.fasta -m matches.txt sequences.fastq
+    scythe -a adapter_file.fasta -o trimmed_sequences.fastq -m matches.txt sequences.fastq
 
 By default, Illumina's quality scheme (pipeline > 1.3) is used. Sanger
 or Solexa (pipeline < 1.3) qualities can be specified with `-q`:
 
-    scythe -a adapter_file.fasta -q solexa -o trimmed_sequences.fasta sequences.fastq
+    scythe -a adapter_file.fasta -q solexa -o trimmed_sequences.fastq sequences.fastq
 
 Lastly, one can specify the minimum match length argument with `-n
 <integer>` and the minimum length of sequence (discarded less than or
 equal to this parameter) to keep after trimming with `-M <integer>`:
 
-    scythe -a adapter_file.fasta -n 0 -M 10 -o trimmed_sequences.fasta sequences.fastq
+    scythe -a adapter_file.fasta -n 0 -M 10 -o trimmed_sequences.fastq sequences.fastq
 
 The default is 5. If this pre-processing is upstream of assembly on a
 very contaminated lane, decreasing this parameter could lead to *very*

@@ -30,7 +30,7 @@ static const float default_prior = 0.3;
 #endif
 
 #ifndef VERSION
-#define VERSION 0.993
+#define VERSION 0.994
 #endif
 
 /* Options drawn from GNU's coreutils/src/system.h */
