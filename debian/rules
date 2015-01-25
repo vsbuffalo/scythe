@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+PACKAGE=scythe
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	dh_auto_build -- \
+          CFLAGS="$$(dpkg-buildflags --get CFLAGS)" \
+          LDFLAGS="$$(dpkg-buildflags --get LDFLAGS)" \
+
+override_dh_auto_install:
+	cp scythe $(CURDIR)/debian/$(PACKAGE)/usr/bin/
+	cp illumina_adapters.fa $(CURDIR)/debian/$(PACKAGE)/usr/share/doc/$(PACKAGE)/

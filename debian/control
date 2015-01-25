@@ -1,0 +1,17 @@
+Source: scythe
+Maintainer: Kevin Murray <spam@kdmurray.id.au>
+Section: science
+Priority: optional
+Standards-Version: 3.9.6
+Build-Depends: debhelper (>= 9),
+               zlib1g-dev,
+               check
+Homepage: https://github.com/vsbuffalo/scythe
+
+Package: scythe
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Bayesian adaptor trimmer for sequencing reads
+ Scythe uses a Naive Bayesian approach to classify contaminant substrings in
+ sequence reads. It considers quality information, which can make it robust in
+ picking out 3'-end adapters, which often include poor quality bases.
