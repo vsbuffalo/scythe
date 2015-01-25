@@ -42,5 +42,6 @@ tramp
 *.out
 
 scythe
+test-scythe
 
 *.gch
