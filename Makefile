@@ -3,8 +3,7 @@ VERSION = 0.994
 CC = gcc
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
-	CFLAGS += -g -O0
-else
+	CFLAGS += -g -O0 else
 	CFLAGS += -O3
 endif
 
@@ -16,7 +15,7 @@ SDIR = src
 LOBJS = match.o util.o prob.o
 OBJS = $(LOBJS) scythe.o
 
-.PHONY: clean distclean dist testclean lib test all
+.PHONY: clean distclean dist testclean lib test all debian
 
 all: scythe test-scythe libscythe.so
 
@@ -55,10 +54,20 @@ distclean: clean
 	rm -rf *.tar.gz
 
 dist:
-	tar -zcf $(ARCHIVE).tar.gz src Makefile
+	tar -zcf $(ARCHIVE).tar.gz src Makefile illumina_adapters.fa
 
 
 lib: libscythe.so
 
 libscythe.so: $(LOBJS)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
+
+debian:
+	mkdir -p scythe-debian
+	cp -r debian src Makefile illumina_adapters.fa scythe-debian
+	tar -zcf $(ARCHIVE).orig.tar.gz src Makefile illumina_adapters.fa
+
+debian-clean:
+	rm -f scythe_*.deb scythe*.dsc scythe_*.build scythe_*.changes  scythe_*.debian.tar.*  scythe_*.orig.tar.gz
+	rm -rf scythe-debian
+	$(MAKE) clean distclean
