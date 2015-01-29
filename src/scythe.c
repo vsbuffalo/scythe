@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
   seq = kseq_init(fp);
 
   /* Loop through entire sequence file. Write trimmed sequences to
-     file (or stdout), and record matches in a match file if specifed.
+     file (or stdout), and record matches in a match file if specified.
   */
   while ((l = kseq_read(seq)) >= 0) {
     shift = -1;
