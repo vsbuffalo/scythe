@@ -3,7 +3,8 @@ VERSION = 0.994
 CC = gcc
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
-	CFLAGS += -g -O0 else
+	CFLAGS += -g -O0
+else
 	CFLAGS += -O3
 endif
 
@@ -15,7 +16,7 @@ SDIR = src
 LOBJS = match.o util.o prob.o
 OBJS = $(LOBJS) scythe.o
 
-.PHONY: clean distclean dist testclean lib test all debian
+.PHONY: clean distclean dist testclean lib test all debian debian-clean
 
 all: scythe test-scythe libscythe.so
 
