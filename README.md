@@ -135,14 +135,7 @@ removed. This has worked well and is recommended for cases when 3'-end
 quality deteriorates and prevents barcode removal. Newer Illumina
 chemistry (TruSeq) has the barcode separated from the fragment, so
 that it appears as an entirely separate read that is used to
-demultiplex sample reads by Illumina's CASAVA pipeline. In case the 6
-bp sample IDs are not readily available, we have included a helper
-script to profile the IDs found in the forward reads of TruSeq data
-set (reverse reads are subject to contamination by a different adapter
-that doesn't contain variable sequence). Use this script as follows
-(e.g.):
-
-cat reads.fq | head -4000000 | perl profileTruSeqIDs.pl > IDsFound.txt
+demultiplex sample reads by the Illumina pipeline.
 
 ### Does Scythe work on 5'-end or other contaminants?
 
