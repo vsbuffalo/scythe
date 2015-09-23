@@ -55,26 +55,27 @@ Then, copy or move "scythe" to a directory in your $PATH.
 
 Scythe can be run minimally with:
 
-    scythe -a adapter_file.fasta -o trimmed_sequences.fasta sequences.fastq
+    scythe -a adap.fa -o trimmed_sequences.fasta sequences.fastq
 
-By default, the prior contamination rate is 0.05. This can be changed
+By default, the prior contamination rate is 0.3. This can be changed
 (and one is encouraged to do so!) with:
 
-    scythe -a adapter_file.fasta -p 0.1 -o trimmed_sequences.fastq sequences.fastq
+    scythe -a adap.fa -p 0.1 -o trimmed_sequences.fastq sequences.fastq
 
 If you'd like to use standard out, it is recommended you use the
 --quiet option:
 
-    scythe -a adapter_file.fasta --quiet sequences.fastq > trimmed_sequences.fastq
+    scythe -a adap.fa --quiet sequences.fastq > trimmed_sequences.fastq
 
 Also, more detailed output about matches can be obtained with:
 
-    scythe -a adapter_file.fasta -o trimmed_sequences.fasta -m matches.txt sequences.fastq
+    scythe -a adap.fa -o trimmed_sequences.fasta -m matches.txt sequences.fastq
 
-By default, Illumina's quality scheme (pipeline > 1.3) is used. Sanger
-or Solexa (pipeline < 1.3) qualities can be specified with -q:
+By default, the Sanger fastq quality encoding (phred+33; pipeline >= 1.8) is used. 
+Illumina (phred+64; pipelines 1.3 - 1.7) or Solexa ("Solexa"+64; pipelines < 1.3) 
+qualities can be specified with -q:
 
-    scythe -a adapter_file.fasta -q solexa -o trimmed_sequences.fasta sequences.fastq
+    scythe -a adap.fa -q solexa -o trimmed_sequences.fasta sequences.fastq
 
 Lastly, a minimum match length argument can be specified with -n <integer>:
 
@@ -86,27 +87,21 @@ liberal trimming, i.e. of only a few bases.
 
 ## Notes
 
-Note that the two provided adapter sequence files contain non-FASTA
-characters to denote the locations of barcode sequences, which always
-appear in TruSeq adapters, and may or may not appear in forward and/or
-reverse reads using the original Solexa/Illumina adapter sequences,
-depending on library preparation. You'll need to modify the adapter
-sequence files in order to use them.
+Note that the provided adapter sequence files (*_adapters.fa) contain
+non-FASTA characters to denote the locations of barcode sequences,
+which always appear in TruSeq adapters, and may or may not appear in
+forward and/or reverse reads using the original ("Solexa") Illumina
+adapter sequences, depending on library preparation. You'll need to
+modify the adapter sequence files in order to use them.
 
-In the case of the original Solexa/Illumina adapter sequences, we've seen
-barcodes "upstream" of forward reads (in which case the reverse complement
-of the barcode will appear before the adapter sequence at the 3'-end of 
-reverse reads - replacing the [NNNNNN]). We've also seen barcodes upstream 
-of reverse reads (in which case the reverse complement of the barcode will 
-appear before the adapter sequence at the 3'-end of forward reads - 
-replacing the [MMMMMM]). Your definition of the barcode may be someone
-else's reverse-complemented barcode, and the barcode may or may not be 6
-bases.
-
-In the case of TruSeq adapter sequences, there will always be a 6 bp
-barcode in place of the [NNNNNN] in sequence contaminating forward reads
-(if the fragment is short enough, of course). This barcode sequence should
-match the barcode included in the reads' FASTQ headers.
+An example adapters file (adap.fa) is included for ease of use. It
+omits barcodes, so it can be used on all samples of an indexed pool or
+set of files (the first ~30 bp are sufficient to identify adapter
+contamination). However, Scythe will check reads against all adapter
+sequences in the file, so a file with 6 adapter sequences will cause
+roughly 6x runtime. Since your samples will never include adapters
+from several types of kits, you're encouraged to omit everything but
+the adapter(s) that will be found in your sequences.
 
 Scythe only checks for 3'-end contaminants, up to the adapter's length
 into the 3'-end. For reads with contamination in *any* position, the
