@@ -20,12 +20,11 @@
 \section{Motivation:}
 Illumina's short read sequencing technology uses known adapter
 sequences that can contaminate the 3'-ends of reads when individual
-sample fragments are shorter than the read length. Unfortunately, the
-3'-ends of these reads are enriched with low quality bases that are
-more likely to be called incorrectly, which makes identifying and
-removing 3'-end contaminants difficult. However, removal of
-contaminating sequence is a critical step in most bioinformatics
-pipelines.
+sample DNA fragments are shorter than the read length. Unfortunately,
+the 3'-ends of these reads contain more substitution errors, which
+makes identifying and removing 3'-end contaminants difficult. However,
+removal of contaminating sequence is a critical step in most
+bioinformatics pipelines.
 
 
 \section{Results:} 
@@ -47,22 +46,22 @@ Scythe is freely available under the MIT license at
 
 \section{Introduction}
 Scythe embraces the Unix Philosophy of ``programs that do one thing
-well'' (\citealp{raymond2003}), and focuses on recognition and
-trimming of Illumina adapter contamination. Illumina's
+well'' (\citealp{gancarz1995}), and focuses on recognition and removal
+of Illumina adapter sequence from read 3'-ends. Illumina's
 second-generation sequencing technology (MiSeq, GA series, HiSeq)
-often results in reads that have a known, largely unvarying adapter
-sequence that starts at variable (but largely 3'-biased) positions in
-reads. Bases at the 3'-end are also more difficult to call, and
-accordingly have low base qualities and high substitution error
-rates. Importantly, though, the 3'-end quality deterioration is not
-uniform across all reads (see Fig. 1 in Supplementary Materials).
+often results in reads that contain a known adapter sequence starting
+at variable, but commonly 3'-biased positions in reads. Bases at the
+3'-end are also more difficult to call, and consequently have low base
+qualities and high substitution error rates. Importantly, though, the
+3'-end quality deterioration is not uniform across all reads (see
+Fig. 1 in Supplementary Materials).
 
 Low quality 3'-end bases are commonly trimmed as a first step, however
 this discards some evidence, albeit noisy, for adapter
 sequences. Scythe is meant to be run before quality trimming is
 performed, and uses a Bayesian classification scheme that
 differentially weights mismatches between the adapter sequence and
-bases in a read according to their particular base quality.
+bases in a read according to their base qualities.
 
 We tested Scythe using a combination of real and simulated data, along
 with two other 3'-end adapter trimming tools: Btrim (ref) and Cutadapt
@@ -108,21 +107,22 @@ a read, there are two mutually exclusive and exhaustive events: (1)
 there is a contaminant at the specified position, or (2) there is no
 contaminant at that position. A likelihood for each of these events,
 given probabilities of each base being called correctly (derived from
-the base qualities) and which bases mismatch the contaminant sequence,
-can be calculated.
+their phred-scaled base qualities (\citealp{ewing1998})) and which
+bases mismatch the contaminant sequence, can be calculated.
 
-These likelihood functions assume models of error for each event. If
-the top-scoring match is contaminant-derived (event $C$), the
-likelihood $P(S | C)$ (where $S$ is the sequence match data) is:
+The following likelihood functions assume independent models of error
+for each event. If the top-scoring match is contaminant-derived (event
+$C$), the likelihood $P(S | C)$ (where $S$ is the sequence match data)
+is:
 
 $$ P(S | C) = \prod_{i=1}^{l_t} q_i^{m_i} \cdot (1-q_i)^{1 - m_i} $$
 
 Where $m_i \in \{0, 1\}$ indicating whether the $i$ base is a mismatch
 or match (respectively) and $q_i$ is the probability the $i$ base is
-called correctly (from its base quality). $l_t$ is the length of the
-top-scoring match. On the other hand, if the top-scoring match is not
-contaminant-derived (event $C'$), it is assumed that the match
-occurred by chance, giving the likelihood function:
+called correctly. $l_t$ is the length of the top-scoring match. On the
+other hand, if the top-scoring match is not contaminant-derived (event
+$C'$), it is assumed that the match occurred by chance, giving the
+likelihood function:
 
 $$ P(S | C') = \prod_{i=1}^{l_t} \left(\frac{1}{4}\right)^{m_i} \cdot \left(\frac{3}{4}\right)^{1 - m_i} $$
 
@@ -227,17 +227,22 @@ other trimmers.
 %\paragraph{Funding\textcolon} None.
 
 
-\bibliographystyle{natbib}
+% \bibliographystyle{natbib}
 % \bibliographystyle{achemnat}
 % \bibliographystyle{plainnat}
 % \bibliographystyle{abbrv}
 % \bibliographystyle{bioinformatics}
-\nocite{qrqc}
-\nocite{ShortRead}
-\nocite{Biostrings}
-\nocite{ggplot2}
+% \nocite{qrqc}
+% \nocite{ShortRead}
+% \nocite{Biostrings}
+% \nocite{ggplot2}
 
-\bibliography{references}
+\begin{thebibliography}{}
+\bibitem[Ewing \textit{et~al}., 1998]{ewing1998}
+Ewing B, Hillier L, Wendl MC, Green P (1998) Base-calling of automated sequencer traces using phred. I. Accuracy assessment. \textit{Genome Res.} \textbf{8}(3):175--185
 
+\bibitem[Gancarz, 1995]{gancarz1995}
+Gancarz M (1995) \textit{The UNIX Philosophy}. Digital Press, Boston.
 
+\end{thebibliography}
 \end{document}
