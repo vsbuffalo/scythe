@@ -1,7 +1,7 @@
-# Scythe - A very simple adapter trimmer (version 0.981 BETA)
+# Scythe - A Bayesian adapter trimmer (version 0.994 BETA)
 
-Scythe and all supporting documentation 
-Copyright (c) Vince Buffalo, 2011-2012
+Scythe and all supporting documentation
+Copyright (c) Vince Buffalo, 2011-2014
 
 Contact: Vince Buffalo <vsbuffaloAAAAA@gmail.com> (with the poly-A tail removed)
 
@@ -27,7 +27,7 @@ quality-based trimming, as part of a read quality control pipeline.
 The Bayesian approach Scythe uses compares two likelihood models: the
 probability of seeing the matches in a sequence given contamination,
 and not given contamination. Given that the read is contaminated, the
-probability of seeing a certain number of matches and mistmatches is a
+probability of seeing a certain number of matches and mismatches is a
 function of the quality of the sequence. Given the read is not
 contaminated (and is thus assumed to be random sequence), the
 probability of seeing a certain number of matches and mismatches is
@@ -47,7 +47,7 @@ Scythe requires Zlib, which can be obtained at <http://www.zlib.net/>.
 
 To build Scythe, enter:
 
-    make build
+    make all
 
 Then, copy or move "scythe" to a directory in your $PATH.
 
@@ -63,12 +63,13 @@ By default, the prior contamination rate is 0.3. This can be changed
     scythe -a adap.fa -p 0.1 -o trimmed_sequences.fastq sequences.fastq
 
 If you'd like to use standard out, it is recommended you use the
---quiet option:
+`--quiet` option:
 
     scythe -a adap.fa --quiet sequences.fastq > trimmed_sequences.fastq
 
 Also, more detailed output about matches can be obtained with:
 
+<<<<<<< HEAD
     scythe -a adap.fa -o trimmed_sequences.fasta -m matches.txt sequences.fastq
 
 By default, the Sanger fastq quality encoding (phred+33; pipeline >= 1.8) is used. 
@@ -77,16 +78,19 @@ qualities can be specified with -q:
 
     scythe -a adap.fa -q solexa -o trimmed_sequences.fasta sequences.fastq
 
-Lastly, a minimum match length argument can be specified with -n <integer>:
+Lastly, one can specify the minimum match length argument with `-n
+<integer>` and the minimum length of sequence (discarded less than or
+equal to this parameter) to keep after trimming with `-M <integer>`:
 
-    scythe -a adapter_file.fasta -n 0 -o trimmed_sequences.fasta sequences.fastq
+    scythe -a adapter_file.fasta -n 0 -M 10 -o trimmed_sequences.fastq sequences.fastq
 
 The default is 5. If this pre-processing is upstream of assembly on a
 very contaminated lane, decreasing this parameter could lead to *very*
-liberal trimming, i.e. of only a few bases. 
+liberal trimming, i.e. of only a few bases.
 
 ## Notes
 
+<<<<<<< HEAD
 Note that the provided adapter sequence files (*_adapters.fa) contain
 non-FASTA characters to denote the locations of barcode sequences,
 which always appear in TruSeq adapters, and may or may not appear in
@@ -103,14 +107,21 @@ roughly 6x runtime. Since your samples will never include adapters
 from several types of kits, you're encouraged to omit everything but
 the adapter(s) that will be found in your sequences.
 
-Scythe only checks for 3'-end contaminants, up to the adapter's length
-into the 3'-end. For reads with contamination in *any* position, the
-program TagDust (<http://genome.gsc.riken.jp/osc/english/dataresource/>)
-is recommended. Scythe has the advantages of allowing fuzzier matching
+Scythe only checks for 3'-end contaminants. As of commit `7f49366`,
+the algorithm has changd, and Scythe now matches 3' contaminants up to
+the 5'-end. Still, do not use Scythe for 5'-trimming as (1) this is a
+trivial problem for most Illumina sequences, as the quality is high in
+this region, and (2) Scythe does not allow for adapters overlap the
+5'-end (though this may come in the future).
+
+For reads with contamination in *any* position, the program TagDust
+(<http://genome.gsc.riken.jp/osc/english/dataresource/>) is
+recommended. Scythe has the advantages of allowing fuzzier matching
 and being base quality-aware, while TagDust has the advantages of very
 fast matching (but allowing few mismatches, and not considering
-quality) and FDR. Note that TagDust removes contaminated reads *entirely*,
-while Scythe trims off contaminating sequence, leaving valuable reads!
+quality) and FDR. Note that TagDust removes contaminated reads
+*entirely*, while Scythe trims off contaminating sequence, leaving
+valuable uncontaminated read sequence!
 
 A possible pipeline would run FASTQ reads through Scythe, then
 TagDust, then a quality-based trimmer, and finally through a read
@@ -118,7 +129,7 @@ quality statistics program such as qrqc
 (<http://bioconductor.org/packages/devel/bioc/html/qrqc.html>) or FASTqc
 (<http://www.bioinformatics.bbsrc.ac.uk/projects/fastqc/>).
 
-## FAQ 
+## FAQ
 
 ### Does Scythe work with paired-end data?
 
@@ -172,7 +183,7 @@ first 3 bases, 5 of the first 4 bases, etc.
 
 No, as these have no quality information.
 
-### How can I report a bug? 
+### How can I report a bug?
 
 See the section below.
 
@@ -189,6 +200,11 @@ our group (the UC Davis Bioinformatics Core) has seen, as a small bad
 quality run can quickly exhaust even a high numbers of fixed
 mismatches and lead to higher false negatives.
 
+### How do I cite Scythe?
+
+Just link to this Github repository, until I finish the manuscript
+(sorry).
+
 ## Reporting Bugs
 
 Scythe is free software and is proved without a warranty. However, I
@@ -204,5 +220,5 @@ me directly.
 ## Is there a paper about Scythe?
 
 I am currently writing a paper on Scythe's methods. In my preliminary
-testing, Scythe has fewew false positives and false negatives than
-it competitors.
+testing, Scythe has fewer false positives and false negatives than its
+competitors.

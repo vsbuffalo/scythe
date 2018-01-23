@@ -12,11 +12,10 @@
 #include "kseq.h"
 #include "scythe.h"
 
-#define MIN(a,b) ((a)>(b)?(b):(a))
-
+__KSEQ_BASIC(static, gzFile)
 __KS_GETC(gzread, BUFFER_SIZE)
 __KS_GETUNTIL(gzread, BUFFER_SIZE)
-__KSEQ_READ
+__KSEQ_READ(static)
 
 
 void *xmalloc(size_t size) {
@@ -91,20 +90,17 @@ char *fmt_matches(const char *seqa, const char *seqb, const int *matches, const 
   */
   char *out = xmalloc(3*(n + 1)*sizeof(char) + 2), *ptr=out;
   int i;
-  /* if (strlen(seqa) == n) { */
-  /*   printf("seqa: %s\nseqb: %s\n", seqa, seqb); */
-  /* } */
   sprintf(out, "%.*s\n", n, seqa);
   ptr += n + 1;
   for (i = 0; i < n; i++) {
-    if (matches[i] == MATCH_SCORE) {
+    if (matches[i]) {
       sprintf(ptr, "|");
     } else {
       sprintf(ptr, " ");
     }
     ptr++;
   }
-  sprintf(ptr, "\n%s", seqb);
+  sprintf(ptr, "\n%.*s", (int) n, seqb);
   return out;
 }
 
@@ -113,9 +109,9 @@ void print_float_array(const float *array, int n) {
   printf("[");
   for (i = 0; i < n; i++) {
     if (i != n-1)
-      printf("%f, ", array[i]);
+      printf("%.2f, ", array[i]);
     else
-      printf("%f]", array[i]);
+      printf("%.2f]", array[i]);
   }
 }
 
@@ -124,9 +120,9 @@ void fprint_float_array(FILE *fp, const float *array, int n) {
   fprintf(fp, "[");
   for (i = 0; i < n; i++) {
     if (i != n-1)
-      fprintf(fp, "%.3f, ", array[i]);
+      fprintf(fp, "%.2f, ", array[i]);
     else
-      fprintf(fp, "%.3f]", array[i]);
+      fprintf(fp, "%.2f]", array[i]);
   }
 }
 
@@ -165,57 +161,77 @@ void fprint_uint_array(FILE *fp, const unsigned int *array, int n) {
   }
 }
 
-int sum(const int *x, int n) {
-  int i;
+inline int sum(const int *x, size_t n) {
+  size_t i;
   int s = 0;
   for (i = 0; i < n; i++)
     s += x[i];
   return s;
 }
 
-void write_fastq(gzFile output_fp, kseq_t *seq, int add_tag, char *tag, int match_n) {
-  /* Heng Li's kseq.h handles FASTQ headers as such: anything after
-     the first space is put in the field "comment" of the kseq_t
-     struct. This function writes a single FASTQ block and wraps
-     simple fprintf such that we don't have to worry about whether
-     there's a comment or not. This has a variety of arguments for
-     different output options,
-  */
-  if (match_n > 0) {
-    /* If match_n is the number of matches we have to trim by, so
-       output trimmed FASTQ seq (and possible header if add_tag is
-       true. */
-    if (add_tag) {
-      if (seq->comment.s)
-        fprintf(output_fp, 
-                "@%s %s%s-%d\n%.*s\n+%s %s%s-%d\n%.*s\n", seq->name.s, seq->comment.s, tag, match_n, 
-                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, seq->comment.s, tag, match_n, 
-                (int) seq->seq.l-match_n, seq->qual.s);
-      else 
-        fprintf(output_fp, 
-                "@%s%s-%d\n%.*s\n+%s%s-%d\n%.*s\n", seq->name.s, tag, match_n, 
-                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, tag, match_n, 
-                (int) seq->seq.l-match_n, seq->qual.s);
+void write_fastq(FILE *output_fp, kseq_t *seq, int add_tag, int shift, int min_keep) {
+  char tag[] = ";;cut_scythe";
+  char *sequence, *qual;
 
-    } else {
-      if (seq->comment.s)
-        fprintf(output_fp, 
-                "@%s %s\n%.*s\n+%s %s\n%.*s\n", seq->name.s, seq->comment.s,
-                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s, seq->comment.s,
-                (int) seq->seq.l-match_n, seq->qual.s);
-      else
-        fprintf(output_fp, 
-                "@%s\n%.*s\n+%s\n%.*s\n", seq->name.s,
-                (int) seq->seq.l-match_n, seq->seq.s, seq->name.s,
-                (int) seq->seq.l-match_n, seq->qual.s);
-
-    }
-  } else { 
-    if (seq->comment.s)
-      fprintf(output_fp, 
-              "@%s %s\n%s\n+%s %s\n%s\n", seq->name.s, seq->comment.s, seq->seq.s, seq->name.s, seq->comment.s, seq->qual.s);
-  else
-      fprintf(output_fp, 
-              "@%s\n%s\n+%s\n%s\n", seq->name.s, seq->seq.s, seq->name.s, seq->qual.s);
+  /* check if we have fewer than min-match */ 
+  if (shift != -1 && shift <= min_keep) {
+    sequence = "N";
+    qual = "B";
+    shift = -1;
+  } else {
+    sequence = seq->seq.s;
+    qual = seq->qual.s;
   }
+  if (shift >= 0) {
+    
+    if (add_tag) {
+      fprintf(output_fp, 
+              "@%s %.*s%s-%d\n%.*s\n+\n%.*s\n", seq->name.s, (int) seq->comment.l, 
+              seq->comment.s, tag, shift, 
+              (int) shift, sequence,
+              (int) shift, qual);
+    } else {
+      fprintf(output_fp, 
+              "@%s %.*s\n%.*s\n+\n%.*s\n", seq->name.s, (int) seq->comment.l,
+              seq->comment.s,
+              (int) shift, sequence,
+              (int) shift, qual);
+    }
+  } else
+    fprintf(output_fp, 
+            "@%s %.*s\n%s\n+\n%s\n", seq->name.s, (int) seq->comment.l, 
+            seq->comment.s, sequence, qual);
+}
+
+void print_summary(adapter_array *aa, float prior, int uncontaminated, 
+                   int contaminated, int total) {
+  /* int i; */
+  fprintf(stderr, "prior: %0.3f\n", prior);
+  fprintf(stderr, "\nAdapter Trimming Complete\ncontaminated: %d, uncontaminated: %d, total: %d\n", 
+          contaminated, total-contaminated, total);
+  fprintf(stderr, "contamination rate: %f\n\n", contaminated/(float) total);
+  /* for (i = 0; i < aa->n; i++) { */
+  /*   fprintf(stderr, "\nAdapter %d '%s' contamination occurences:\n", i+1, aa->adapters[i].name); */
+  /*   fprint_uint_array(stderr, aa->adapters[i].occurrences, aa->adapters[i].length); */
+  /*   fprintf(stderr, "\n"); */
+  /* } */
+}
+
+void print_match(kseq_t *seq, match *match, FILE *matches_fp, 
+                 const adapter_array *aa, quality_type qual_type) {
+  /* Make a string that indicates the position of the matches with "|"s. */
+  char *match_string;
+  match_string = fmt_matches((aa->adapters[match->adapter_index]).seq,
+                             &(seq->seq.s)[match->shift], 
+                             match->match_pos, match->length);
+  
+  fprintf(matches_fp, "p(c|s): %f; p(!c|s): %f; adapter: %s\n%s\n%s\n%.*s\n", 
+          match->ps->contam, match->ps->random,
+          aa->adapters[match->adapter_index].name,
+          seq->name.s, match_string, 
+          (int) match->length,
+          &(seq->qual.s)[match->shift]);
+  fprint_float_array(matches_fp, qual_to_probs(&(seq->qual.s)[match->shift], qual_type), match->length);
+  fprintf(matches_fp, "\n\n");
+  free(match_string);
 }
